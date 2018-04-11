@@ -1,0 +1,13 @@
+<results>
+    <result name="name" type="RegExp">.+</result>
+    <result name="slug" type="RegExp">.+</result>
+    <result name="description" type="RegExp">.+</result>
+    <result name="createdAt" type="RegExp">.+</result>
+    <result name="createdBy" type="RegExp">.+</result>
+    <result name="updatedAt" type="RegExp">.+</result>
+    <result name="updatedBy" type="RegExp">.+</result>
+    <result name="notes" type="RegExp">.+</result>
+    <result name="secure" type="RegExp">.+</result>
+    <result name="attributes" type="RegExp">.+</result>
+    <result name="fields" type="RegExp">.+</result>
+</results>

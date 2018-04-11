@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taskDefinition id="kinetic_request_ce_submission_update_observers" name="Kinetic Request CE Submission Update Observers" schema_version="1.0" version="1">
+    <author>support@kineticdata.com</author>
+    <description>
+        Updates a Submissions Observing Teams and Observing Individuals fields with the given Observing Team and Observing Individual.
+    </description>
+    <helpurl></helpurl>
+    <visible>true</visible>
+    <deferrable>false</deferrable>
+    <parameters>
+        <parameter id="error_handling" label="Error Handling" required="true"
+          tooltip="Determine what to return if an error is encountered."
+          menu="Error Message,Raise Error">Error Message</parameter>
+        <parameter id="space_slug" label="Space Slug" required="false"
+          tooltip="The Space the submission is being retrieved from (defaults to info value if not provided)."/>
+        <parameter id="submission_id" label="Submission Id" required="true"
+          tooltip="The id of the submission being updated."/>
+        <parameter id="observing_teams" label="Observing Teams" required="false"
+            tooltip="A JSON array of the teams that should exist in this submissions Observing Teams field"/>
+        <parameter id="observing_individuals" label="Observing Individuals" required="false"
+            tooltip="A JSON array of the individuals that should exist in this submissions Observing Individuals field"/>
+        <parameter id="replace_existing" label="Replace Existing" required="false"
+            tooltip="If the given Observing Team/Individual fields should be overwritten">false</parameter>
+    </parameters>
+    <handler name="kinetic_request_ce_submission_update_observers" version="1">
+        <infos>
+            <info name="api_password">&lt;%= @info['api_password'] %&gt;</info>
+            <info name="api_server">&lt;%= @info['api_server'] %&gt;</info>
+            <info name="api_username">&lt;%= @info['api_username'] %&gt;</info>
+            <info name="space_slug">&lt;%= @info['space_slug'] %&gt;</info>
+            <info name="enable_debug_logging">&lt;%= @info['enable_debug_logging'] %&gt;</info>
+        </infos>
+        <parameters>
+            <parameter name="error_handling">&lt;%= @parameters.has_key?("error_handling") ?
+                @parameters["error_handling"] : "Raise Error" %&gt;</parameter>
+            <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
+            <parameter name="submission_id">&lt;%= @parameters['submission_id'] %&gt;</parameter>
+            <parameter name="observing_teams">&lt;%= @parameters['observing_teams'] %&gt;</parameter>
+            <parameter name="observing_individuals">&lt;%= @parameters['observing_individuals'] %&gt;</parameter>
+            <parameter name="replace_existing">&lt;%= @parameters.has_key?("replace_existing") ? @parameters["replace_existing"].downcase : "false" %&gt;</parameter>
+        </parameters>
+    </handler>
+    <results format="xml">
+      <result name="Handler Error Message"/>
+    </results>
+</taskDefinition>

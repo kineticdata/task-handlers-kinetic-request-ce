@@ -1,0 +1,7 @@
+Kinetic Request CE Submission Get Answers V2 (2017-05-24)
+* Updated to allow included and excluded fields
+* Updated to include answer set (json) answer as well
+* Updated to allow replacement of field names/aliases for values included in the answer set
+
+Kinetic Request CE Submission Get Answers V1 (2016-03-05)
+ * Initial version.  See README for details.

@@ -1,0 +1,71 @@
+== Kinetic Core Form Retrieve
+Retrieves a form.
+
+=== Parameters
+[Space Slug]
+  The slug of the Space.
+[Team Name]
+  Optional. If only one team's information is desired, specify team name.
+[Include Membership]
+  Whether or not to include the memberships of the team(s), default: true, possible options: true, false
+[Include Attributes]
+  Whether or not to include the attributes of the team(s), default: true, possible options: true, false
+
+=== Results
+[Teams]
+  JSON listing of the forms in the kapp.
+[Handler Error Message]
+  Error, if one is returned.
+  
+== Example
+
+Space Slug::  
+Team Name::   Marketing
+Include Membership::  true
+Include Attributes::  true
+
+=== Detailed Description
+This handler retrieves a json list of forms listed like:
+
+[
+	{"attributes":[],
+	"createdAt":"2017-01-28T01:22:35.091Z",
+	"createdBy":"james.davies@kineticdata.com",
+	"description":"",
+	"memberships":[
+		{"user":{"username":"james.davies@kineticdata.com"}},
+		{"user":{"username":"john.sundberg@kineticdata.com"}}
+		],
+	"name":"Default",
+	"slug":"7a1920d61156abc05a60135aefe8bc67",
+	"updatedAt":"2017-01-28T01:22:35.091Z",
+	"updatedBy":"james.davies@kineticdata.com"},
+	{"attributes":[],
+	"createdAt":"2017-01-28T01:22:50.453Z",
+	"createdBy":"james.davies@kineticdata.com",
+	"description":"",
+	"memberships":[
+		{"user":{"username":"james.davies@kineticdata.com"}},
+		{"user":{"username":"john.sundberg@kineticdata.com"}}
+		],
+	"name":"Marketing",
+	"slug":"7cb15e416d62919b1b40298324fbe30b",
+	"updatedAt":"2017-01-28T01:22:50.453Z",
+	"updatedBy":"james.davies@kineticdata.com"}
+]
+
+If Team: Marketing specified, result would be:
+
+{
+	"attributes":[],
+	"createdAt":"2017-01-28T01:22:50.453Z",
+	"createdBy":"james.davies@kineticdata.com",
+	"description":"",
+	"memberships":[
+		{"user":{"username":"james.davies@kineticdata.com"}},
+		{"user":{"username":"john.sundberg@kineticdata.com"}}
+		],
+	"name":"Marketing",
+	"slug":"7cb15e416d62919b1b40298324fbe30b",
+	"updatedAt":"2017-01-28T01:22:50.453Z",
+	"updatedBy":"james.davies@kineticdata.com"}

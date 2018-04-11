@@ -1,0 +1,9 @@
+Kinetic Request CE Submission Retrieve V2 (2017-11-19)
+* Added the ability to retrieve by query while also keeping the search by id option
+
+Kinetic Request CE Submission Retrieve V1.1 (2017-01-30)
+* Change the origin/parent to return a JSON string.
+
+Kinetic Request CE Submission Retrieve V1 (2016-04-25)
+* Initial version.  See README for details.
+* Added Kapp Name and Kapp Slug to results

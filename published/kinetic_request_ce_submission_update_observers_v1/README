@@ -1,0 +1,31 @@
+== Kinetic Request CE Submission Update Observers
+Updates a submissions Observing Teams and Observing Individuals Values.
+
+=== Parameters
+[Error Handling]
+  Determine what to return if an error is encountered.
+[Space Slug]
+  The space the submission is being retrieved from (defaults to info value if not provided).
+[Submission Id]
+  The id of the submission being updated.
+[Observing Teams]
+  A JSON array of the teams that should exist in this submissions Observing Teams field.
+[Observing Individuals]
+  A JSON array of the individuals that should exist in this submissions Observing Individuals field.
+[Replace Existing]
+  If the given Observing Team/Individual fields should be overwritten.
+
+=== Sample Configuration
+Error Handling:         Error Message
+Space Slug:
+Submission Id::         02edc019-e553-11e5-9c32-351e42075226
+Observing Individuals:: ["user1","user2"]
+Observing Teams::       ["team1","team2"]
+Replace Existing::       false
+
+=== Results
+[Handler Error Message]
+  Error message if an error was encountered and Error Handling is set to "Error Message".
+
+=== Detailed Description
+This handler Updates a submissions Observing Teams and Observing Individuals Values.
