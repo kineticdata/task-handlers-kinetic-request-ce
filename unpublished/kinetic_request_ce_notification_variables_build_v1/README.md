@@ -1,5 +1,5 @@
 == Kinetic Request CE Notification Variables Build
-Builds Replacement Variables for Notifications.
+This handler builds up replacement variables for notifications sent using the Kinetic Request CE Notification Template Send handler.
 
 === Parameters
 [Error Handling]
@@ -8,24 +8,24 @@ Builds Replacement Variables for Notifications.
   The Slug of the Space to which we're finding replacement variables in
   (if not provided, the space slug configured in the handlers info values will be used)
 [kapp_slug]
-  The Slug of the Kapp which we're finding replacement variables in 
+  The Slug of the Kapp which we're finding replacement variables in
   (not required in a submission ID provided / required if a forms_slug provided)
 [form_slug]
-  The Slug of the Form which we're finding replacement variables in 
+  The Slug of the Form which we're finding replacement variables in
   (not required in a submission ID provided)
 [submission_id]
-  The Submission ID to find replacement variables in 
+  The Submission ID to find replacement variables in
   (if used, all replacement variables will come from this submissions parent form/kapp/space)
 [username]
   If a username is provided (should only be VALID CE USERS), then User Details / User Attributes / User Profile Attributes will be returned
 [Additional Variables]
   A JSON string of additional replacement variables that will be accessable in Notifications by referencing
   ${vars('variable name')}
-  Format should be a JSON object of Key / Value Pairs 
+  Format should be a JSON object of Key / Value Pairs
 [Backup Variables]
-  A JSON String of Backup Variables to be used in Replacements if Missing. 
-  For example, if we want to use a space attribute to build styling in a notification but 
-  the Space Attribute got deleted for some reason, values here will be used and must follow 
+  A JSON String of Backup Variables to be used in Replacements if Missing.
+  For example, if we want to use a space attribute to build styling in a notification but
+  the Space Attribute got deleted for some reason, values here will be used and must follow
   the same structure as the returned results
   ex. {
         "spaceAttributes":{
@@ -77,7 +77,7 @@ Builds Replacement Variables for Notifications.
     "Form Type": "Work Order"
   },
   "formAttributes": {
-    
+
   },
   "kapp": {
     "Kapp Name": "Queue",
@@ -120,4 +120,3 @@ Builds Replacement Variables for Notifications.
     "Last Name": "Blow"
   }
 }
-

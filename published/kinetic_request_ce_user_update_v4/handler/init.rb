@@ -5,7 +5,7 @@ class KineticRequestCeUserUpdateV4
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -28,7 +28,7 @@ class KineticRequestCeUserUpdateV4
     api_password      = @info_values["api_password"]
     api_server        = @info_values["api_server"]
     space_slug        = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
-    current_username  = @parameters["current_username"]
+    current_username  = URI.encode(@parameters["current_username"])
     error_handling  = @parameters["error_handling"]
     userAttributeDefinitions = {}
     userProfileAttributeDefinitions = {}
@@ -37,7 +37,7 @@ class KineticRequestCeUserUpdateV4
     api_route = "#{api_server}/#{space_slug}/app/api/v1/userAttributeDefinitions"
     resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
-    if !response.nil? 
+    if !response.nil?
       defs = JSON.parse(response)['userAttributeDefinitions']
       defs.each { |definition| userAttributeDefinitions[definition['name']] = definition['allowsMultiple'] }
     end
@@ -46,7 +46,7 @@ class KineticRequestCeUserUpdateV4
     api_route = "#{api_server}/#{space_slug}/app/api/v1/userProfileAttributeDefinitions"
     resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
-    if !response.nil? 
+    if !response.nil?
       defs = JSON.parse(response)['userProfileAttributeDefinitions']
       defs.each { |definition| userProfileAttributeDefinitions[definition['name']] = definition['allowsMultiple'] }
     end
@@ -72,14 +72,14 @@ class KineticRequestCeUserUpdateV4
         <result name="Exists">true</result>
       </results>
       RESULTS
-    else     
+    else
       # Start Update Code
       api_route = "#{api_server}/#{space_slug}/app/api/v1/users/#{current_username}"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       enabled = boolean(@parameters["enabled"])
-      space_admin = boolean(@parameters["space_admin"])  
+      space_admin = boolean(@parameters["space_admin"])
       user = JSON.parse(response)["user"]
-      
+
       # If Attributes are to be appended to exisiting attributes
       if @parameters["append_or_replace"]=="Append"
         # If new attributes are supplied process the values
@@ -158,7 +158,7 @@ class KineticRequestCeUserUpdateV4
                   end
                 end
               end
-              
+
             end
             # If the attribute didn't exist add its values.
             if !match
@@ -171,7 +171,7 @@ class KineticRequestCeUserUpdateV4
         user["attributes"] = JSON.parse(@parameters["attributes"])
         user["profileAttributes"] = JSON.parse(@parameters["profile_attributes"])
       end
-      
+
       data = {}
       data.tap do |json|
         json[:displayName]       = @parameters["display_name"]                    if !@parameters["display_name"].empty?
@@ -183,16 +183,16 @@ class KineticRequestCeUserUpdateV4
         json[:preferredLocale]   = URI.encode(@parameters["preferred_locale"])    if !@parameters["preferred_locale"].empty?
         json[:attributes]        = user["attributes"]                             if !@parameters["attributes"].empty?
         json[:profileAttributes] = user["profileAttributes"]                      if !@parameters["profile_attributes"].empty?
-      end 
+      end
 
-      user_name=current_username
+      user_name=@parameters["current_username"]
       # If new_username is supplied set user_name to its value.
       if !@parameters["new_username"].empty?
         user_name=@parameters["new_username"]
       end
-      
+
       resource.put(data.to_json, { :content_type => "json", :accept => "json" })
-      
+
       <<-RESULTS
       <results>
         <result name="Username">#{escape(URI.encode(user_name) )}</result>
@@ -223,10 +223,10 @@ class KineticRequestCeUserUpdateV4
           RESULTS
         end
       end
-      
+
   end
 
-  
+
   def boolean(string)
     return true if string.downcase == "true" || string =~ (/(true|t|yes|y|1)$/i)
     return false if string.downcase == "false" || string.nil? || string =~ (/(false|f|no|n|0)$/i)

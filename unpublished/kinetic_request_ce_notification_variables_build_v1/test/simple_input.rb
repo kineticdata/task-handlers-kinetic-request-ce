@@ -1,18 +1,18 @@
 {
   'info' => {
-    'api_server' => 'https://test.io/kinetic',
-    'api_username' => 'test@kineticdata.com',
+    'api_server' => 'https:/yourserver.com/kinetic',
+    'api_username' => '',
     'api_password' => '',
-    'space_slug' => 'test-template',
+    'space_slug' => '',
     'enable_debug_logging'=>'yes'
   },
   'parameters' => {
     'error_handling' => 'Error Message',
     'space_slug' => '',
-    'kapp_slug' => 'catalog',
-    'form_slug' => 'test',
-    'submission_id' => 'ff813651-f5e6-11e6-82e0-5ba1593b7676',
-    'username' => 'john.doe@kineticdata.com',
+    'kapp_slug' => 'services',
+    'form_slug' => '',
+    'submission_id' => '0777ba53-4751-11e8-a835-274eb2f3015e',
+    'username' => '',
     'addt_vars' => '{"testAddtlVar-NAME":"testAddtlVar-VALUE"}',
     'backups' => '{"spaceAttributes":{"testAttribute":"testAttributeValue"}}',
   }
