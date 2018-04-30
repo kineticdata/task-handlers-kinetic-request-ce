@@ -5,7 +5,7 @@ class KineticRequestCeNotificationVariablesBuildV1
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -33,7 +33,7 @@ class KineticRequestCeNotificationVariablesBuildV1
       kapp_slug       = @parameters["kapp_slug"].empty? ? nil : @parameters["kapp_slug"]
       form_slug       = @parameters["form_slug"].empty? ? nil : @parameters["form_slug"]
       submission_id   = @parameters["submission_id"].empty? ? nil : @parameters["submission_id"]
-      username        = @parameters["username"].empty? ? nil : @parameters["username"]
+      username        = @parameters["username"].empty? ? nil : URI.encode(@parameters["username"])
       backups         = @parameters["backups"].empty? ? nil : JSON.parse(@parameters["backups"])
       addt_vars       = @parameters["addt_vars"].empty? ? nil : JSON.parse(@parameters["addt_vars"])
       api_route       = "#{api_server}/#{space_slug}/app/api/v1/"
