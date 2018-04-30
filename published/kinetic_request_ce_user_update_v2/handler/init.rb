@@ -18,7 +18,7 @@ class KineticRequestCeUserUpdateV2
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -41,7 +41,7 @@ class KineticRequestCeUserUpdateV2
     api_password      = @info_values["api_password"]
     api_server        = @info_values["api_server"]
     space_slug        = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
-    current_username  = @parameters["current_username"]
+    current_username  = URI.encode(@parameters["current_username"])
 
     api_route = "#{api_server}/#{space_slug}/app/api/v1/users/#{current_username}"
 
