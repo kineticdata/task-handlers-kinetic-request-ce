@@ -10,18 +10,21 @@ Retrieves a datastore submission.
   How to retrive the submission. Id of Query.
 [Form Slug]
   Slug of the form to query.
+[Index]
+  The index to use for the search/retrieval.
 [Query]
   A query that will retrieve a single submission.
 [Submission Id]
   The id of the submission being retrieved.
 
 === Sample Configuration
-Error Handling:         Error Message
+Error Handling:           Error Message
 Space Slug:
-Retrieve By:            Id
-Form Slug:              cars
+Retrieve By:              Id
+Datastore Form Slug:      cars
+Index:
 Query:
-Submission Id:          29f141f3-f00c-11e7-9a71-0506559f5412
+Datastore Submission Id:  29f141f3-f00c-11e7-9a71-0506559f5412
 
 === Results
 [Handler Error Message]

@@ -8,9 +8,11 @@
   },
   'parameters' => {
     'error_handling' => 'Error Message',
-    'space_slug' => 'internal',
+    'space_slug' => '',
     'form_slug' => 'cars',
-    'query' => 'include=values&limit=100&index=values[Make]&q=values[Make]="Ford"',
-    'return_type' => 'XML'
+    'index' => 'values[Make]',
+    'query' => 'values[Make]="Ford"',
+    'limit' => '100',
+    'return_type' => 'JSON'
   }
 }

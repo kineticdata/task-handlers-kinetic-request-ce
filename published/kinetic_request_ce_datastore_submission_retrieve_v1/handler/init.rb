@@ -21,6 +21,17 @@ class KineticRequestCeDatastoreSubmissionRetrieveV1
     @enable_debug_logging = @info_values['enable_debug_logging'].downcase == 'yes' ||
                             @info_values['enable_debug_logging'].downcase == 'true'
     puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
+
+    if @parameters['retrieve_by'] == "Id"
+      if @parameters['form_slug'].to_s.empty? || @parameters['index'].to_s.empty? ||
+         @parameters['query'].to_s.empty?
+        raise "'Form Slug','Index', and 'Query' are all required fields when attempting to retrieve by query"
+      end
+    else
+      if @parameters['submission_id'].to_s.empty?
+        raise "'Submission Id' is a required field when attempting to retrieve by id"
+      end
+    end
   end
 
   def execute
@@ -39,7 +50,7 @@ class KineticRequestCeDatastoreSubmissionRetrieveV1
         api_route += "/submissions/#{@parameters["submission_id"]}?include=#{includes}"
       elsif @parameters['retrieve_by'] == "Query"
         api_route += "/forms/#{@parameters['form_slug']}/submissions"
-        api_route += "?include=#{includes}&q=#{URI.encode(@parameters['query'])}&limit=1"
+        api_route += "?include=#{includes}&index=#{URI.encode(@parameters['index'])}&q=#{CGI.escape(@parameters['query'])}&limit=1"
       else
         raise "Retrieve By type '#{@parameters['retrieve_by']}' not supported"
       end
