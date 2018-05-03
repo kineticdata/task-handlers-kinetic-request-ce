@@ -13,8 +13,12 @@
           tooltip="The Space the submission is being retrieved from (defaults to info value if not provided)."/>
         <parameter id="form_slug" label="Datastore Form Slug" required="false"
             tooltip="The slug of the Datastore Form to search for submissions in."/>
+        <parameter id="index" label="Index" required="false"
+            tooltip="The index to use for the search." />
         <parameter id="query" label="Query" required="false"
             tooltip="The query that will be used to search the submissions. Ex: values[company]=Kinetic"/>
+        <parameter id="limit" label="Limit" required="false"
+            tooltip="An integer representing the max results that the search can return." />
         <parameter id="return_type" label="Return Type" required="true"
             tooltip="The format that the results should be returned in."
             menu="JSON,XML,ID List">JSON</parameter>
@@ -32,7 +36,9 @@
                 @parameters["error_handling"] : "Raise Error" %&gt;</parameter>
             <parameter name="space_slug">&lt;%= @parameters["space_slug"] %&gt;</parameter>
             <parameter name="form_slug">&lt;%= @parameters['form_slug'] %&gt;</parameter>
+            <parameter name="index">&lt;%= @parameters['index'] %&gt;</parameter>
             <parameter name="query">&lt;%= @parameters['query'] %&gt;</parameter>
+            <parameter name="limit">&lt;%= @parameters['limit'] %&gt;</parameter>
             <parameter name="return_type">&lt;%= @parameters['return_type'] %&gt;</parameter>
         </parameters>
     </handler>

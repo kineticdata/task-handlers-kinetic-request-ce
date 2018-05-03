@@ -18,11 +18,11 @@ Updates a datastore submission.
   Set the current page navigation.
 
 === Sample Configuration
-Error Handling:         Error Message
+Error Handling:           Error Message
 Space Slug:
-Submission Id:          02edc019-e553-11e5-9c32-351e42075226
-State:                  Submitted
-Values:                 {"Year": "2019"}
+Datastore Submission Id:  02edc019-e553-11e5-9c32-351e42075226
+State:                    Submitted
+Values:                   {"Year": "2019"}
 Current Page Name:
 Current Page Navigation:
 

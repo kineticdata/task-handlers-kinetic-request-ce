@@ -19,7 +19,7 @@ Creates a Datastore Submission record in Kinetic Core for the specified space.
 === Sample Configuration
 Error Handling:          Error Message
 Space Slug:
-Form Slug:               cars
+Datastore Form Slug:     cars
 Values:                  {"Year": "2018", "Model": "CR-V", "Make": "Honda"}
 Current Page Name:       Page 1
 Current Page Navigation:

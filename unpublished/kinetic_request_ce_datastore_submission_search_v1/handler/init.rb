@@ -41,7 +41,10 @@ class KineticRequestCeDatastoreSubmissionSearchV1
     formatted_submissions = nil
     begin
       api_route = "#{api_server}/#{space_slug}/app/api/v1/datastore/forms/#{form_slug}"
-      api_route += "/submissions?#{URI.encode(query)}"
+      api_route += "/submissions?include=details,form,values"
+      api_route += "&index=#{URI.encode(@parameters['index'])}" if !@parameters['index'].to_s.empty?
+      api_route += "&q=#{CGI.escape(@parameters['query'])}" if !@parameters['query'].to_s.empty?
+      api_route += "&limit=#{@parameters['limit']}" if !@parameters['limit'].to_s.empty?
       puts "API ROUTE: #{api_route}" if @enable_debug_logging
 
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })

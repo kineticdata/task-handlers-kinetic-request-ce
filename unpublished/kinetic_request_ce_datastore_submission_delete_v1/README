@@ -10,9 +10,9 @@ Deletes a Datastore Submission record in Kinetic Request CE for the specified sp
   The id of the datastore submission being deleted.
 
 === Sample Configuration
-Error Handling:         Error Message
+Error Handling:           Error Message
 Space Slug:
-Submission Id:          02edc019-e553-11e5-9c32-351e42075226
+Datastore Submission Id:  02edc019-e553-11e5-9c32-351e42075226
 
 === Results
 [Handler Error Message]
