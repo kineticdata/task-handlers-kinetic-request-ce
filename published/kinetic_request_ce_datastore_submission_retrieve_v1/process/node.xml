@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<taskDefinition id="kinetic_request_ce_datastore_submission_retrieve" name="Kinetic Request CE Datastore Submission Retrieve" schema_version="1.0" version="2">
+<taskDefinition id="kinetic_request_ce_datastore_submission_retrieve" name="Kinetic Request CE Datastore Submission Retrieve" schema_version="1.0" version="1">
     <author>support@kineticdata.com</author>
     <description>
         Retrieves a Datastore Submission record in Kinetic Request CE for the specified space.
@@ -30,7 +30,7 @@
           tooltip="The id of the submission being retrieved."
           dependsOnId="retrieve_by" dependsOnValue="Id"/>
     </parameters>
-    <handler name="kinetic_request_ce_datastore_submission_retrieve" version="2">
+    <handler name="kinetic_request_ce_datastore_submission_retrieve" version="1">
         <infos>
             <info name="api_password">&lt;%= @info['api_password'] %&gt;</info>
             <info name="api_server">&lt;%= @info['api_server'] %&gt;</info>
