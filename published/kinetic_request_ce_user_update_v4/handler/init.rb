@@ -132,16 +132,16 @@ class KineticRequestCeUserUpdateV4
           new_profile_attributes.each do |new|
             # Initialize a value to assume no match was found
             match = false
-            # Iterate through each currents Profile Attributes
+            # Iterate through each current Profile Attribute
             current_profile_attributes.each do |current|
-              # If the curent Attribute no longer exists in the space, remove it
-              if userAttributeDefinitions[current['name']].nil?
-                user['attributes'].delete_if {|attr| attr['name'] == current['name']}
+              # If the curent Profile Attribute no longer exists in the space, remove it.
+              if userProfileAttributeDefinitions[current['name']].nil?
+                user['profileAttributes'].delete_if {|attr| attr['name'] == current['name']}
               else
 
-                # If the new attribute already exists continue
+                # If the new profile attribute already exists continue
                 if current['name'] == new['name']
-                  # Set flag to indicate the attribute exist in current list
+                  # Set flag to indicate the profile attribute exist in current list
                   match = true
                   # Iterate through each of the Profile Attributes values to check if it already exists
                   new['values'].each do |value|
