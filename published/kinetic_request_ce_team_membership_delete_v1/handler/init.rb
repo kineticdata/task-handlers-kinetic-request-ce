@@ -25,17 +25,24 @@ class KineticRequestCeTeamMembershipDeleteV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
     username        = @parameters["username"]
     teamname        = @parameters["teamname"]
 
     begin
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/"
+      api_route = "#{server}/app/api/v1/"
 
       # Get Teams to locate team slug
       resource = RestClient::Resource.new("#{api_route}teams", { :user => api_username, :password => api_password })

@@ -31,10 +31,17 @@ class KineticRequestCeAttachmentCopyV1
   end
 
   def execute()
-    server          = @info_values["api_server"]
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     user            = @info_values["api_username"]
     pass            = @info_values["api_password"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     error_handling  = @parameters["error_handling"]
     kapp_slug       = @parameters["kapp_slug"]
     form_slug       = @parameters["form_slug"]
@@ -46,8 +53,7 @@ class KineticRequestCeAttachmentCopyV1
     imported_file_details = []
 
      # Submission API Route including Values
-      submission_api_route = server +
-                             "/" + space_slug +
+      submission_api_route = server
                              "/app/api/v1/submissions/" +
                              URI.escape(submission_id) +
                              "/?include=values"
@@ -76,7 +82,7 @@ class KineticRequestCeAttachmentCopyV1
             # "/{spaceSlug}/app/api/v1/submissions/{submissionId}/files/{fieldName}/{fileIndex}/{fileName}/url"
 
             attachment_download_api_route = server +
-              '/' + space_slug + '/app/api/v1' +
+              '/app/api/v1' +
               '/submissions/' + URI.escape(submission_id) +
               '/files/' + URI.escape(field_name) +
               '/' + index.to_s +
@@ -103,7 +109,7 @@ class KineticRequestCeAttachmentCopyV1
 
                 # upload the handler file to the space task server
                 http_client = DefaultHttpClient.new
-                httppost = HttpPost.new("#{server}/#{space_slug}/#{kapp_slug}/#{form_slug}/files")
+                httppost = HttpPost.new("#{server}/#{kapp_slug}/#{form_slug}/files")
                 httppost.setHeader("Authorization", "Basic " + Base64.encode64(user + ':' + pass).gsub("\n",''))
                 httppost.setHeader("Accept", "application/json")
                 reqEntity = MultipartEntity.new
@@ -133,7 +139,7 @@ class KineticRequestCeAttachmentCopyV1
             files << file_info
           end
             #now we have the file uploaded, we need to attach it to the specific submission and field
-            api_route = "#{server}/#{space_slug}/app/api/v1/submissions/#{to_submission_id}"
+            api_route = "#{server}/app/api/v1/submissions/#{to_submission_id}"
 
             puts "Update submission API ROUTE: #{api_route}" if @enable_debug_logging
 

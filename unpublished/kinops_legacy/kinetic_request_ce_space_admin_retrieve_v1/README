@@ -1,0 +1,24 @@
+== Kinetic Request CE Space Admin Retrieve
+Retrieves space admins from a space for Kinetic Request CE.
+
+=== Parameters
+[SpaceSlug]
+  The Space slug to be searched. If this value is not entered, the
+  Space slug will default to the one configured in info values.
+
+
+
+=== Sample Configuration
+Space:      acme
+
+
+=== Results
+[usernames]
+  Usernames of the space admins (comma delimited)
+[emails]
+  Emails of the space admins (comma delimited).
+
+
+
+=== Detailed Description
+This handler returns the space admins for the provided space.

@@ -1,0 +1,7 @@
+<results>
+    <result name="Handler Error Message" type="Regexp"></result>
+    <result name="Count" type="RegExp">.+</result>
+    <result name="Submissions" type="RegExp">.+</result>
+    <result name="XML" type="RegExp">.+</result>
+    <result name="IdList" type="RegExp">.+</result>
+</results>

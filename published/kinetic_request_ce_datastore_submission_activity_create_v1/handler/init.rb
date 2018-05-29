@@ -24,21 +24,28 @@ class KineticRequestCeDatastoreSubmissionActivityCreateV1
   end
 
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     error_handling  = @parameters["error_handling"]
 
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/datastore/submissions/#{@parameters["submission_id"]}/activities"
+    api_route = "#{server}/app/api/v1/datastore/submissions/#{@parameters["submission_id"]}/activities"
 
     resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
 
     # Building the object that will be sent to Kinetic Core
-    data = { 
+    data = {
             :label       => @parameters["label"],
-            :description => @parameters["description"], 
-            :type        => @parameters["type"], 
+            :description => @parameters["description"],
+            :type        => @parameters["type"],
             :data        => @parameters["data"]
            }.to_json
 

@@ -29,6 +29,14 @@ class KineticRequestCeAttributesSetV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
@@ -38,7 +46,7 @@ class KineticRequestCeAttributesSetV1
 
       # Build the API route depending on what type was passed as a parameter
       puts "Building the API route based on the inputted type" if @enable_debug_logging
-      api_route = "#{@info_values['api_server']}/#{space_slug}/app/api/v1/"
+      api_route = "#{server}/app/api/v1/"
       type_routes = {
         "Space"        => "space",
         "Team"         => "teams",

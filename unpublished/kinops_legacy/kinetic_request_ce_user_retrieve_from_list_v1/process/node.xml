@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taskDefinition id="kinetic_request_ce_user_retrieve_from_list" name="Kinetic Request CE User Retrieve From List" schema_version="1.0" version="1">
+    <author>support@kineticdata.com</author>
+    <description>
+        Retrieves specified user records from Kinetic Request CE for the specified space. Returns JSON.
+	</description>
+    <helpurl></helpurl>
+    <visible>true</visible>
+    <deferrable>false</deferrable>
+    <parameters>
+        <parameter id="space_slug" label="Space Slug" required="false"
+          tooltip="The Space the submission is being retrieved from."/>
+        <parameter id="usernames" label="Username List" required="true"
+		  tooltip="Comma separated list of usernames to retrieve."/>
+    </parameters>
+    <handler name="kinetic_request_ce_user_retrieve_from_list" version="1">
+        <infos>
+            <info name="api_password">&lt;%= @info['api_password'] %&gt;</info>
+            <info name="api_server">&lt;%= @info['api_server'] %&gt;</info>
+            <info name="api_username">&lt;%= @info['api_username'] %&gt;</info>
+            <info name="space_slug">&lt;%= @info['space_slug'] %&gt;</info>
+        </infos>
+        <parameters>
+            <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
+			<parameter name="usernames">&lt;%= @parameters['usernames'] %&gt;</parameter>
+        </parameters>
+    </handler>
+    <results format="xml">
+        <result name="User Details JSON"/>
+        <result name="Users Not Found JSON"/>
+    </results>
+</taskDefinition>

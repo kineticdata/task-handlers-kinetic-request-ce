@@ -1,0 +1,9 @@
+Kinetic Request CE Notification Template Send V2.1 (2018-05-25)
+* API Server Info Value changed to allow ${space} in the url for subdomain support
+(ie. https://${space}.localhost:8080/kinetic)
+
+Kinetic Request CE Notification Template Send V2 (2017-02-10)
+ * 2018-05-09
+ * Updated handler to retrieve data from CE Datastore. ** This handler is now
+ only compatible with CE version 2.1 or later. **
+ * Removed ability to record message as this functionality was not used

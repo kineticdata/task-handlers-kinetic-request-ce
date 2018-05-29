@@ -5,7 +5,7 @@ class KineticRequestCeSubmissionRetrieveChildrenV1
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -27,15 +27,22 @@ class KineticRequestCeSubmissionRetrieveChildrenV1
   end
 
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     return_type     = @parameters["return_type"]
     submission_id   = @parameters["submission_id"]
     error_handling  = @parameters["error_handling"]
 
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/submissions/#{submission_id}?include=children"
+    api_route = "#{server}/app/api/v1/submissions/#{submission_id}?include=children"
 
     puts "API ROUTE: #{api_route}" if @enable_debug_logging
 
@@ -110,7 +117,7 @@ class KineticRequestCeSubmissionRetrieveChildrenV1
       element
     end
   end
-  
+
   ##############################################################################
   # General handler utility functions
   ##############################################################################

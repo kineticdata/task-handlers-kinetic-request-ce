@@ -18,11 +18,11 @@ class KineticRequestCeTeamCreateV1
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-	
+
 	 # Determine if debug logging is enabled.
     @debug_logging_enabled = get_info_value(@input_document, 'enable_debug_logging') == 'Yes'
     puts("Logging enabled.") if @debug_logging_enabled
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -42,14 +42,20 @@ class KineticRequestCeTeamCreateV1
   # If it returns a result, it will be in a special XML format that the task engine expects. These
   # results will then be available to subsequent tasks in the process.
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['server'].include?("${space}")
+      server = @info_values['server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['server']+"/"+space_slug
+    else
+      server = @info_values['server']
+    end
 
     username    = URI.encode(@info_values["username"])
     password    = @info_values["password"]
-    server      = @info_values["server"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     error_handling  = @parameters["error_handling"]
 
-    route_base = "#{server}/#{space_slug}/app/api/v1/teams"
+    route_base = "#{server}/app/api/v1/teams"
 
     puts "API ROUTE: #{route_base}" if @debug_logging_enabled
 
@@ -70,10 +76,10 @@ class KineticRequestCeTeamCreateV1
 		end
 		dataHash["memberships"] = membership
 	end
-	
+
 	puts "DATA: #{dataHash.to_json}" if @debug_logging_enabled
 	begin
-	#create 
+	#create
     response = resource.post(dataHash.to_json, { accept: :json, content_type: :json })
 
 
@@ -116,7 +122,7 @@ class KineticRequestCeTeamCreateV1
   end
   # This is a ruby constant that is used by the escape method
   ESCAPE_CHARACTERS = {'&'=>'&amp;', '>'=>'&gt;', '<'=>'&lt;', '"' => '&quot;'}
-  
+
     # This is a sample helper method that illustrates one method for retrieving
   # values from the input document.  As long as your node.xml document follows
   # a consistent format, these type of methods can be copied and reused between

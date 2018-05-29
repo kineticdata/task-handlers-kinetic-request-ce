@@ -28,6 +28,14 @@ class KineticRequestCeTeamRetrieveV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
@@ -43,7 +51,7 @@ class KineticRequestCeTeamRetrieveV1
       includes.push("memberships") if !returnParams.include?("memberships")
 
       # API Route
-      route = @info_values['api_server'] + "/" + space_slug + "/app/api/v1/teams?include=#{includes.join(",")}"
+      route = server + "/app/api/v1/teams?include=#{includes.join(",")}"
 
       puts "API ROUTE: #{route}" if @enable_debug_logging
 

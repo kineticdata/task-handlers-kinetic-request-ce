@@ -25,15 +25,22 @@ class KineticRequestCeSubmissionRetrieveV2
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
     begin
       api_username    = URI.encode(@info_values["api_username"])
       api_password    = @info_values["api_password"]
-      api_server      = @info_values["api_server"]
 
-      api_route = "#{api_server}/#{space_slug}/app/api/v1"
+      api_route = "#{server}/app/api/v1"
       includes = "details,origin,parent,children,descendents,form,type,form.kapp"
       if @parameters['retrieve_by'] == "Id"
         api_route += "/submissions/#{@parameters["submission_id"]}?include=#{includes}"
