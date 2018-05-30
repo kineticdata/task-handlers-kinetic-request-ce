@@ -26,6 +26,13 @@ class KineticRequestCeAttachmentTempLinkRetrieveV1
   def execute
     # Initialize variables
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
@@ -35,7 +42,7 @@ class KineticRequestCeAttachmentTempLinkRetrieveV1
     # Call the Kinetic Request CE API
     begin
       # Submission API Route including Values
-      submission_api_route = "#{@info_values['api_server']}/#{space_slug}/app/api/v1/submissions/"+
+      submission_api_route = "#{server}/app/api/v1/submissions/"+
         "#{URI.escape(@parameters['submission_id'])}?include=values"
 
       # Retrieve the Submission Values
@@ -60,8 +67,8 @@ class KineticRequestCeAttachmentTempLinkRetrieveV1
             # "/{spaceSlug}/app/api/v1/submissions/{submissionId}/files/{fieldName}/{fileIndex}/{fileName}/url"
 #            attachment_download_api_route = get_info_value(@input_document, 'api_server') +
 #              file_info['link'] + "/url"
-            attachment_download_api_route = @info_values["api_server"] +
-              '/' + space_slug + '/app/api/v1' +
+            attachment_download_api_route = server +
+              '/app/api/v1' +
               '/submissions/' + URI.escape(@parameters['submission_id']) +
               '/files/' + URI.escape(@parameters['field_name']) +
               '/' + index.to_s +

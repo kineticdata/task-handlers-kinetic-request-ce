@@ -28,7 +28,7 @@ class KineticRequestCeTeamUpdateV1
     # Determine if debug logging is enabled.
     @debug_logging_enabled = @info_values['enable_debug_logging'] == 'Yes'
     puts("Logging enabled.") if @debug_logging_enabled
-    
+
     # Retrieve all of the handler parameters and store them in a hash variable named @parameters.
     @parameters = {}
     REXML::XPath.each(@input_document, "/handler/parameters/parameter") do |item|
@@ -41,16 +41,23 @@ class KineticRequestCeTeamUpdateV1
   # If it returns a result, it will be in a special XML format that the task engine expects. These
   # results will then be available to subsequent tasks in the process.
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     api_username      = URI.encode(@info_values["api_username"])
     api_password      = @info_values["api_password"]
-    api_server        = @info_values["api_server"]
-    space_slug        = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     current_name  = @parameters["current_name"]
     error_handling  = @parameters["error_handling"]
     teamAttributeDefinitions = {}
 
     # Get Team Attribute Definitions from Space
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/teamAttributeDefinitions"
+    api_route = "#{server}/app/api/v1/teamAttributeDefinitions"
 
     puts "API ROUTE: #{api_route}" if @debug_logging_enabled
 
@@ -62,7 +69,7 @@ class KineticRequestCeTeamUpdateV1
     end
 
     # Get All Teams (the only way to get the current team is by slug, so we need to retrieve all and find the slug)
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/teams"
+    api_route = "#{server}/app/api/v1/teams"
     resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
     teams = JSON.parse(response)['teams']
@@ -72,7 +79,7 @@ class KineticRequestCeTeamUpdateV1
     if !teamToUpdate.nil?
       teamSlugToUpdate = teamToUpdate['slug']
       # Get the team to update
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/teams/#{teamSlugToUpdate}?include=details,attributes"
+      api_route = "#{server}/app/api/v1/teams/#{teamSlugToUpdate}?include=details,attributes"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       response = resource.get
     end
@@ -87,7 +94,7 @@ class KineticRequestCeTeamUpdateV1
       RESULTS
     else
       # Start Update Code
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/teams/#{teamSlugToUpdate}"
+      api_route = "#{server}/app/api/v1/teams/#{teamSlugToUpdate}"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       team = JSON.parse(response)["team"]
 
@@ -134,7 +141,7 @@ class KineticRequestCeTeamUpdateV1
             end
           end
         end
- 
+
       # Else Replace Attributes with existing Attributes
       else
         team["attributes"] = JSON.parse(@parameters["attributes"])

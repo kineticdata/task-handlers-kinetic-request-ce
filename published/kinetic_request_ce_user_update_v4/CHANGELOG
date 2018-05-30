@@ -17,3 +17,7 @@ Kinetic Request CE User Update V4.1 (2018-04-24)
 
 Kinetic Request CE User Update V4.2 (2018-05-16)
 * Correct the code to update userProfile Attributes
+
+Kinetic Request CE User Update V4.3 (2018-05-25)
+* API Server Info Value changed to allow ${space} in the url for subdomain support
+(ie. https://${space}.localhost:8080/kinetic)

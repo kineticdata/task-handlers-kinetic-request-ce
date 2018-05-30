@@ -24,21 +24,28 @@ class KineticRequestCeAttributeDefinitionCreateV1
   end
 
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     begin
-      space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
       error_handling  = @parameters["error_handling"]
       error_message   = nil
 
       api_username    = URI.encode(@info_values["api_username"])
       api_password    = @info_values["api_password"]
-      api_server      = @info_values["api_server"]
 
       raise "A Kapp Slug is required when attempting to create a definition for the following types: "+
         "Kapp, Category, Form" if @parameters['kapp_slug'].to_s.empty? && ["Kapp","Category","Form"].include?(@parameters['type'])
 
       # Build the API route depending on what type was passed as a parameter
       puts "Building the API route based on the inputted type" if @enable_debug_logging
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/"
+      api_route = "#{server}/app/api/v1/"
       type_routes = {
         "Space"        => "spaceAttributeDefinitions",
         "Team"         => "teamAttributeDefinitions",

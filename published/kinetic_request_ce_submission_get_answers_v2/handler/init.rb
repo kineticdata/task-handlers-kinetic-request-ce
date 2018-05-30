@@ -5,7 +5,7 @@ class KineticRequestCeSubmissionGetAnswersV2
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -17,7 +17,7 @@ class KineticRequestCeSubmissionGetAnswersV2
     REXML::XPath.each(@input_document, "/handler/parameters/parameter") do |item|
       @parameters[item.attributes["name"]] = item.text.to_s.strip
     end
-    
+
     @enable_debug_logging = @info_values['enable_debug_logging'].downcase == 'yes' ||
                             @info_values['enable_debug_logging'].downcase == 'true'
     puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
@@ -28,11 +28,18 @@ class KineticRequestCeSubmissionGetAnswersV2
   # If it returns a result, it will be in a special XML format that the task engine expects. These
   # results will then be available to subsequent tasks in the process.
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
     kapp_slug       = @parameters["kapp_slug"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     submission_id   = @parameters["submission_id"]
     error_handling  = @parameters["error_handling"]
     field_aliases = @parameters["field_aliases"]
@@ -40,7 +47,7 @@ class KineticRequestCeSubmissionGetAnswersV2
     included_fields = @parameters["included_fields"]
     excluded_fields = @parameters["excluded_fields"]
 
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/submissions/#{submission_id}?include=values"
+    api_route = "#{server}/app/api/v1/submissions/#{submission_id}?include=values"
 
     puts "API ROUTE: #{api_route}" if @enable_debug_logging
 
@@ -50,36 +57,36 @@ class KineticRequestCeSubmissionGetAnswersV2
 
     submission = JSON.parse(response)
 
-    @values = submission["submission"]["values"]    
+    @values = submission["submission"]["values"]
 
     #remove excluded fields
-    
+
     if !excluded_fields.nil? && excluded_fields != ""
     puts "Removing excluded fields" if @enable_debug_logging
         exclude_fields = excluded_fields.split(",")
-        
+
         @values.each do |fieldName,answer|
             if exclude_fields.include?(fieldName)
                 @values.delete(fieldName)
             end
         end
-    end    
-    
+    end
+
     if mode == "Some" && !included_fields.nil? && included_fields != ""
     puts "Only include included fields" if @enable_debug_logging
         #only include included fields
         include_fields = included_fields.split(",")
         @values = @values.select{|fieldName| include_fields.include?(fieldName)}
-    end    
+    end
 
     #process Aliases for the answer set (JSON) getting created
     answerSet = processAliases(@values, field_aliases)
     answerSetJSON = answerSet.to_json
-    
+
     # Build the results to be returned by this handler
     results = "<results><result name='Handler Error Message'></result>
                <result name='Answer Set'>#{escape(answerSetJSON)}</result>"
-    
+
     @values.each do |fieldName,answer|
       if answer.kind_of?(Array)
         results += "<result name='#{fieldName}'>#{escape(answer.join(" , "))}</result>"
@@ -122,7 +129,7 @@ class KineticRequestCeSubmissionGetAnswersV2
       end
     end
     initialValues.merge!(newValues)
-    
+
     return initialValues
   end
 
@@ -154,8 +161,8 @@ class KineticRequestCeSubmissionGetAnswersV2
     "\r" => "<br>",
     "\n" => "<br>"
   }
-  
-  
+
+
       # Builds a string that is formatted specifically for the Kinetic Task log file
   # by concatenating the provided header String with each of the provided hash
   # name/value pairs.  The String format looks like:
@@ -177,7 +184,7 @@ class KineticRequestCeSubmissionGetAnswersV2
       result << "\n    #{key}: #{value}"
     end
   end
-  
+
 end
 
-  
+

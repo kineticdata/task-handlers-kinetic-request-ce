@@ -25,17 +25,23 @@ class KineticRequestCeSubmissionCloneV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
-    space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
 
     begin
       # API Route to Get Original Submissions Values
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/submissions/#{submission_id}/?include=values,origin,parent,children,descendents,form,type,form.kapp"
+      api_route = "#{server}/app/api/v1/submissions/#{submission_id}/?include=values,origin,parent,children,descendents,form,type,form.kapp"
       # Build Resource to get orig submission
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       # Get Orig Submission
@@ -54,7 +60,7 @@ class KineticRequestCeSubmissionCloneV1
       end
 
       # API Route to Create Cloned Submission
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/kapps/#{kappSlug}/forms/#{formSlug}/submissions?completed=false"
+      api_route = "#{server}/app/api/v1/kapps/#{kappSlug}/forms/#{formSlug}/submissions?completed=false"
       # Build Resource to create new submission
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
 
@@ -83,7 +89,7 @@ class KineticRequestCeSubmissionCloneV1
         end
 
         # Build route for patch
-        api_route = "#{api_server}/#{space_slug}/app/api/v1/submissions/#{newSubmissionId}"
+        api_route = "#{server}/app/api/v1/submissions/#{newSubmissionId}"
         # Build resource for patch
         resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
         # Patch to the API

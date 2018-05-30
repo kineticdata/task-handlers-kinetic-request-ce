@@ -1,0 +1,4 @@
+<results>
+    <result name="User Details JSON" type="RegExp">.+</result>
+    <result name="Users Not Found JSON" type="RegExp">.+</result>
+</results>

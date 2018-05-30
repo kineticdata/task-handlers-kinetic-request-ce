@@ -28,13 +28,19 @@ class KineticRequestCeAttachmentUploadV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
     begin
       user            = @info_values["api_username"]
       pass            = @info_values["api_password"]
-      server          = @info_values["api_server"]
       filehub_key     = @info_values["filehub_key"]
       filehub_secret  = @info_values["filehub_secret"]
       kapp_slug       = @parameters["kapp_slug"]
@@ -53,7 +59,7 @@ class KineticRequestCeAttachmentUploadV1
       file_content = RestClient.get(pre_signed_url).to_java_bytes
 
       http_client = DefaultHttpClient.new
-      httppost = HttpPost.new("#{server}/#{space_slug}/#{kapp_slug}/#{form_slug}/files")
+      httppost = HttpPost.new("#{server}/#{kapp_slug}/#{form_slug}/files")
       httppost.setHeader("Authorization", "Basic " + Base64.encode64(user + ':' + pass).gsub("\n",''))
       httppost.setHeader("Accept", "application/json")
       reqEntity = MultipartEntity.new

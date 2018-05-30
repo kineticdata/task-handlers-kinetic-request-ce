@@ -28,12 +28,19 @@ class KineticRequestCeSubmissionSearchV1
 
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     error_handling  = @parameters["error_handling"]
     error_message = nil
 
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
     kapp_slug      = @parameters["kapp_slug"]
     form_slug      = @parameters["form_slug"]
     query          = @parameters["query"]
@@ -41,7 +48,7 @@ class KineticRequestCeSubmissionSearchV1
     count = nil
     formatted_submissions = nil
     begin
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/kapps/#{kapp_slug}"
+      api_route = "#{server}/app/api/v1/kapps/#{kapp_slug}"
       api_route += "/forms/#{form_slug}" if !form_slug.to_s.empty?
       api_route += "/submissions?#{URI.encode(query)}"
       puts "API ROUTE: #{api_route}" if @enable_debug_logging

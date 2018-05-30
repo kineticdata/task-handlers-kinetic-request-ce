@@ -24,17 +24,24 @@ class KineticRequestCeUserUpdateV4
   end
 
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      server = @info_values['api_server']+"/"+space_slug
+    else
+      server = @info_values['api_server']
+    end
+
     api_username      = URI.encode(@info_values["api_username"])
     api_password      = @info_values["api_password"]
-    api_server        = @info_values["api_server"]
-    space_slug        = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
     current_username  = URI.encode(@parameters["current_username"])
     error_handling  = @parameters["error_handling"]
     userAttributeDefinitions = {}
     userProfileAttributeDefinitions = {}
 
     # Get User Attribute Definitions from Space
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/userAttributeDefinitions"
+    api_route = "#{server}/app/api/v1/userAttributeDefinitions"
     resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
     if !response.nil?
@@ -43,7 +50,7 @@ class KineticRequestCeUserUpdateV4
     end
 
     # Get User Profile Attribute Definitions from Space
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/userProfileAttributeDefinitions"
+    api_route = "#{server}/app/api/v1/userProfileAttributeDefinitions"
     resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
     if !response.nil?
@@ -52,7 +59,7 @@ class KineticRequestCeUserUpdateV4
     end
 
     # Get the user to update
-    api_route = "#{api_server}/#{space_slug}/app/api/v1/users/#{current_username}?include=details,attributes,profileAttributes"
+    api_route = "#{server}/app/api/v1/users/#{current_username}?include=details,attributes,profileAttributes"
     resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
     response = resource.get
 
@@ -74,7 +81,7 @@ class KineticRequestCeUserUpdateV4
       RESULTS
     else
       # Start Update Code
-      api_route = "#{api_server}/#{space_slug}/app/api/v1/users/#{current_username}"
+      api_route = "#{server}/app/api/v1/users/#{current_username}"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       enabled = boolean(@parameters["enabled"])
       space_admin = boolean(@parameters["space_admin"])
