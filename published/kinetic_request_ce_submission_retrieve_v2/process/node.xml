@@ -53,6 +53,7 @@
         <result name="Handler Error Message"/>
         <result name="ID"/>
         <result name="Label"/>
+        <result name="Handle"/>
         <result name="Origin"/>
         <result name="Parent"/>
         <result name="Submitted At"/>

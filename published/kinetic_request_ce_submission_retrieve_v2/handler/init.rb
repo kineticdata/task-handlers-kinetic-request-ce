@@ -64,6 +64,7 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Handler Error Message"></result>
           <result name="ID"></result>
           <result name="Label"></result>
+          <result name="Handle"></result>
           <result name="Origin"></result>
           <result name="Parent"></result>
           <result name="Submitted At"></result>
@@ -90,6 +91,7 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Handler Error Message"></result>
           <result name="ID">#{escape(results['id'])}</result>
           <result name="Label">#{escape(results['label'])}</result>
+          <result name="Handle">#{escape(results['handle'].to_json)}</result>
           <result name="Origin">#{escape(results['origin'].to_json)}</result>
           <result name="Parent">#{escape(results['parent'].to_json)}</result>
           <result name="Submitted At">#{escape(results['submittedAt'])}</result>

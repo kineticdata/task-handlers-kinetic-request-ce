@@ -41,8 +41,6 @@ class KineticRequestCeNotificationTemplateSendV2
     @smtp_auth_type   =   @info_values['smtp_auth_type']
     @api_username     =   URI.encode(@info_values['api_username'])
     @api_password     =   @info_values['api_password']
-    @api_server       =   @info_values['api_server']
-    @space_slug       =   @parameters['space_slug'].empty? ? @info_values['space_slug'] : @parameters['space_slug']
 
     # Determine if debug logging is enabled
     @debug_logging_enabled = @info_values["enable_debug_logging"] == 'Yes'
@@ -67,6 +65,15 @@ class KineticRequestCeNotificationTemplateSendV2
   # If it returns a result, it will be in a special XML format that the task engine expects. These
   # results will then be available to subsequent tasks in the process.
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      @api_server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      @api_server = @info_values['api_server']+"/"+space_slug
+    else
+      @api_server = @info_values['api_server']
+    end
+
     # Build Recipient JSON Based on input value. If not JSON, assume it's an email address
     begin
        @recipient_json = JSON.parse(@parameters["recipient_json"])
