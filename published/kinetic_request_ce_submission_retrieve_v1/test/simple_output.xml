@@ -2,6 +2,7 @@
     <result name="Handler Error Message" type="Regexp"></result>
     <result name="ID" type="Regexp">.+</result>
     <result name="Label" type="Regexp">.+</result>
+    <result name="Handle" type="Regexp">.+</result>
     <result name="Origin" type="Regexp">.+</result>
     <result name="Parent" type="Regexp">.+</result>
     <result name="Submitted At" type="Regexp">.+</result>
