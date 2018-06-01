@@ -22,9 +22,9 @@
     </parameters>
     <handler name="kinetic_request_ce_team_retrieve" version="1">
         <infos>
-            <info name="password">&lt;%= @info['api_password'] %&gt;</info>
-            <info name="server">&lt;%= @info['api_server'] %&gt;</info>
-            <info name="username">&lt;%= @info['api_username'] %&gt;</info>
+            <info name="api_password">&lt;%= @info['api_password'] %&gt;</info>
+            <info name="api_server">&lt;%= @info['api_server'] %&gt;</info>
+            <info name="api_username">&lt;%= @info['api_username'] %&gt;</info>
             <info name="space_slug">&lt;%= @info['space_slug'] %&gt;</info>
             <info name="enable_debug_logging">&lt;%= @info['enable_debug_logging'] %&gt;</info>
         </infos>
