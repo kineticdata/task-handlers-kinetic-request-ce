@@ -148,7 +148,7 @@ class KineticRequestCeNotificationTemplateSendV2
     # Build up a query to retrieve the appropriate notification template
     query = %|values[Name]="#{templateName}" AND values[Status]="Active"|
     # Build the API route for retrieving the notification template submissions based on the Query
-    route =  "#{@api_server}/#{@space_slug}/app/api/v1/datastore/forms/notification-data/submissions" +
+    route =  "#{@api_server}/app/api/v1/datastore/forms/notification-data/submissions" +
                       "?include=details,values&limit=1000&index=values[Name],values[Status]&q=#{URI.escape(query)}"
     # Build a rest resource for calling the CE API
     resource = RestClient::Resource.new(route, { :user => @api_username, :password => @api_password })
@@ -432,8 +432,13 @@ LOGGING
       }
       return true
     rescue RestClient::Exception => error
+      error_message = nil
+      begin
+        error_message = JSON.parse(error.response)["error"]
+      rescue
+        error_message = error.inspect
+      end
       puts "ERROR Getting Date Formats: #{error_message}" if @debug_logging_enabled
-      error_message = JSON.parse(error.response)["error"]
       if @error_handling == "Raise Error"
         raise error_message
       else
