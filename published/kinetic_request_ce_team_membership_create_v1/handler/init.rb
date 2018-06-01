@@ -53,7 +53,9 @@ class KineticRequestCeTeamMembershipCreateV1
       # Find Team in Results
       team = results.find { |team| team['name'] == teamname }
 
-      raise "Team '#{teamname}' not found."
+      if team.nil?
+        raise "Team '#{teamname}' not found."
+      end
 
       # Add user to team
       resource = RestClient::Resource.new("#{api_route}memberships", { :user => api_username, :password => api_password })

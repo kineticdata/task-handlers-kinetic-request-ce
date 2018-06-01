@@ -22,7 +22,7 @@ class KineticRequestCeDatastoreSubmissionRetrieveV1
                             @info_values['enable_debug_logging'].downcase == 'true'
     puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
 
-    if @parameters['retrieve_by'] == "Id"
+    if @parameters['retrieve_by'] == "Query"
       if @parameters['form_slug'].to_s.empty? || @parameters['index'].to_s.empty? ||
          @parameters['query'].to_s.empty?
         raise "'Form Slug','Index', and 'Query' are all required fields when attempting to retrieve by query"
