@@ -423,7 +423,7 @@ LOGGING
     begin
       # Retrieve all active date formats and populate the date_format_json object
       date_format_query = %|values[Status] IN ("active","Active")|
-      date_format_api_route = "#{@api_server}/#{@space_slug}/app/api/v1/datastore/forms/notification-template-dates/submissions" +
+      date_format_api_route = "#{@api_server}/app/api/v1/datastore/forms/notification-template-dates/submissions" +
                   "?include=details,values&limit=1000&index=values[Status]&q=#{URI.escape(date_format_query)}"
       date_format_resource = RestClient::Resource.new(date_format_api_route, { :user => @api_username, :password => @api_password })
       date_format_response = date_format_resource.get
