@@ -1,0 +1,58 @@
+== Kinetic Request CE Create
+Creates the specified item.
+
+=== Parameters
+[Error Handling]
+    Determine what to return if an error is encountered. available menu choices: Error Message,Raise Error, default: Error Message
+[Space Slug]
+    The Space the submission is being created in. Optional
+[Type of Record to Create]
+    Type of record you want to create. Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook.
+[Kapp Slug]
+    Please Specify the Kapp if creating Form, Form Type, or Categories.
+[Item Name or Slug]
+    The slug (or name if slug not appropriate for the item) of the item you are creating.
+[data]
+    JSON data of item to import for create.
+
+
+
+=== Sample Configuration
+Error Handling:             Error Message
+Space Slug:
+Type of Record to Create:   Form
+Kapp Slug:                  services
+Item Name or Slug:          cleaning
+Data:                       <% @results[form][export] %>
+
+
+=== Results
+[Handler Error Message]
+  Error message if an error was encountered and Error Handling is set to "Error Message".
+[Full Response]
+  This will contain the JSON response confirming what was created
+[### Placeholder for response field name ###]
+
+=== Detailed Description
+Builds an XML of the fields on the form. For example, if the form cleaning was created,
+the response might look like this:
+
+<results format="xml">
+
+    <result name="Handler Error Message"></result>
+
+    <result name="Full Response">{"anonymous": false, "description": "Request cleaning  from the Facilities Team", "name": "Cleaning","slug": "cleaning","status": "Active","type": "Service"}</result>
+
+    <result name="anonymous">false</result>
+
+    <result name="description">Request cleaning  from the Facilities Team</result>
+    
+    <result name="name">Cleaning</result>
+    
+    <result name="slug">cleaning</result>
+    
+    <result name="status">Active</result>
+    
+    <result name="type">Service</result>
+
+</results>
