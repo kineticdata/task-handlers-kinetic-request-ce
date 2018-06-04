@@ -61,6 +61,10 @@ class KineticRequestCeRetrieveV1
       type   = "users"
     when "webhook"
       type   = "webhooks"
+    when "security policy definition"
+      type = "securityPolicyDefinitions"
+    when "datastore form"
+      type   = "forms"
     else
       error_message = "The entered type was not valid"
       if error_handling == "Raise Error"
@@ -75,12 +79,15 @@ class KineticRequestCeRetrieveV1
     end
     
     
-    
-    if kapp_slug.nil? || kapp_slug == ''
-         puts "No kapp slug, building without" if @enable_debug_logging
-        api_route = "#{api_server}/#{space_slug}/app/api/v1/#{type}"
-    else 
-        api_route = "#{api_server}/#{space_slug}/app/api/v1/kapps/#{kapp_slug}/#{type}"
+    if @parameters["type"].downcase == "datastore form"
+        api_route = "#{api_server}/#{space_slug}/app/api/v1/datastore/#{type}"
+    else
+        if kapp_slug.nil? || kapp_slug == ''
+             puts "No kapp slug, building without" if @enable_debug_logging
+            api_route = "#{api_server}/#{space_slug}/app/api/v1/#{type}"
+        else 
+            api_route = "#{api_server}/#{space_slug}/app/api/v1/kapps/#{kapp_slug}/#{type}"
+        end
     end
 
     if !slug.nil? && slug != ''

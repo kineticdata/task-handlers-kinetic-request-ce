@@ -7,7 +7,8 @@ Retrieves the specified item.
 [Space Slug]
     The Space the submission is being retrieved from. Optional
 [Type of Record to Retrieve]
-    Type of record you want to retrieve. Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook.
+    Type of record you want to retrieve. 
+    Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook, Security Policy Definition, Datastore Forms.
 [Kapp Slug]
     Please Specify the Kapp if retrieving Form, Form Type, or Categories.
 [Item Name or Slug]

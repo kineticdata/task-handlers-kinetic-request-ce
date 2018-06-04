@@ -14,7 +14,7 @@
         <parameter id="space_slug" label="Space Slug" required="false"
           tooltip="The Space the submission is being retrieved from (defaults to info value if not provided)."/>
         <parameter id="type" label="Type of Record to Retrieve" required="true"
-            tooltip="Type of record you want to retrieve. Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook."/>
+            tooltip="Type of record you want to retrieve. Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook, Security Policy Definition, Datastore Form."/>
         <parameter id="kapp" label="Kapp Slug" required="false"
             tooltip="Please Specify the Kapp if retrieving Submission, Form, Form Type, or Categories"/>
         <parameter id="slug" label="Item Name or Slug" required="true"

@@ -7,7 +7,8 @@ Creates the specified item.
 [Space Slug]
     The Space the submission is being created in. Optional
 [Type of Record to Create]
-    Type of record you want to create. Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook.
+    Type of record you want to create. 
+    Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook, Security Policy Definition, Datastore Forms.
 [Kapp Slug]
     Please Specify the Kapp if creating Form, Form Type, or Categories.
 [Item Name or Slug]
