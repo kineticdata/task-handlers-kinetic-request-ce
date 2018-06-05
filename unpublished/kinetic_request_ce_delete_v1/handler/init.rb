@@ -30,9 +30,14 @@ class KineticRequestCeDeleteV1
   def execute
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
-    api_server      = @info_values["api_server"]
+    api_server      = @parameters["domain"].empty? ? @info_values["api_server"] : @parameters["domain"]
     kapp_slug       = @parameters["kapp"]
     space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if api_server.include?("${space}")
+      api_server = api_server.gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      api_server = api_server+"/"+space_slug
+    end
     slug   = URI.encode(@parameters["slug"])
     
     error_handling  = @parameters["error_handling"]

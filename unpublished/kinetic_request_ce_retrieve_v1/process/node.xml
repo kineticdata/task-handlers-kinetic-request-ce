@@ -11,6 +11,8 @@
         <parameter id="error_handling" label="Error Handling" required="true"
           tooltip="Determine what to return if an error is encountered."
           menu="Error Message,Raise Error">Error Message</parameter>
+        <parameter id="domain" label="Domain/Server" required="false"
+          tooltip="server/domain this space is on"/>
         <parameter id="space_slug" label="Space Slug" required="false"
           tooltip="The Space the submission is being retrieved from (defaults to info value if not provided)."/>
         <parameter id="type" label="Type of Record to Retrieve" required="true"
@@ -34,6 +36,7 @@
         <parameters>
             <parameter name="error_handling">&lt;%= @parameters.has_key?("error_handling") ?
                 @parameters["error_handling"] : "Raise Error" %&gt;</parameter>
+            <parameter name="domain">&lt;%= @parameters['domain'] %&gt;</parameter>
             <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
             <parameter name="type">&lt;%= @parameters['type'] %&gt;</parameter>
             <parameter name="kapp">&lt;%= @parameters['kapp'] %&gt;</parameter>
