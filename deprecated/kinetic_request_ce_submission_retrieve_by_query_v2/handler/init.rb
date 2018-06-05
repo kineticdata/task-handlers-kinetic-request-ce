@@ -1,7 +1,7 @@
 # Require the dependencies file to load the vendor libraries
 require File.expand_path(File.join(File.dirname(__FILE__), "dependencies"))
 
-class KineticRequestCeSubmissionRetrieveByQueryV1
+class KineticRequestCeSubmissionRetrieveByQueryV2
   # Prepare for execution by building Hash objects for necessary values and
   # validating the present state.  This method sets the following instance
   # variables:
@@ -48,17 +48,18 @@ class KineticRequestCeSubmissionRetrieveByQueryV1
       server = @info_values['api_server']
     end
 
-    api_username    = URI.encode(@info_values["api_username"])
-    api_password    = @info_values["api_password"]
-    kapp_slug       = @parameters["kapp_slug"]
-    form_slug       = @parameters["form_slug"]
-    query           = @parameters["query"]
+    api_username  = URI.encode(@info_values["api_username"])
+    api_password  = @info_values["api_password"]
+    api_server    = @info_values["api_server"]
+    kapp_slug     = @parameters["kapp_slug"]
+    form_slug     = @parameters["form_slug"]
+    query         = @parameters["query"]
     error_handling  = @parameters["error_handling"]
 
     api_route = "#{server}/app/api/v1/kapps/#{kapp_slug}/forms/#{form_slug}/submissions" +
-                "?include=details,origin,parent,form,type&limit=1&#{query}"
+                "?include=details,origin,parent,form,type&limit=1&q=#{URI.escape(query)}"
 
-    puts "API ROUTE: #{api_route}"  if @enable_debug_logging
+    puts "API ROUTE: #{api_route}" if @enable_debug_logging
 
     resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
 
@@ -68,7 +69,6 @@ class KineticRequestCeSubmissionRetrieveByQueryV1
     if response.nil?
       <<-RESULTS
       <results>
-        <result name="Handler Error Message"></result>
         <result name="ID"></result>
         <result name="Label"></result>
         <result name="Origin"></result>
