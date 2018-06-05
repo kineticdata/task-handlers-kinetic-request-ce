@@ -24,19 +24,26 @@ class KineticRequestCeNotificationVariablesBuildV1
   end
 
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      api_server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      api_server = @info_values['api_server']+"/"+space_slug
+    else
+      api_server = @info_values['api_server']
+    end
+
     begin
       api_username    = URI.encode(@info_values["api_username"])
       api_password    = @info_values["api_password"]
-      api_server      = @info_values["api_server"]
       error_handling  = @parameters["error_handling"]
-      space_slug      = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
       kapp_slug       = @parameters["kapp_slug"].empty? ? nil : @parameters["kapp_slug"]
       form_slug       = @parameters["form_slug"].empty? ? nil : @parameters["form_slug"]
       submission_id   = @parameters["submission_id"].empty? ? nil : @parameters["submission_id"]
       username        = @parameters["username"].empty? ? nil : URI.encode(@parameters["username"])
       backups         = @parameters["backups"].empty? ? nil : JSON.parse(@parameters["backups"])
       addt_vars       = @parameters["addt_vars"].empty? ? nil : JSON.parse(@parameters["addt_vars"])
-      api_route       = "#{api_server}/#{space_slug}/app/api/v1/"
+      api_route       = "#{api_server}/app/api/v1/"
       api_context     = nil
 
       # Build up initial Variable Placeholder

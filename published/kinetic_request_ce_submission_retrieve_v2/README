@@ -33,6 +33,8 @@ Submission Id:
   ID of the submission that was entered.
 [Label]
   Label of the submission.
+[Handle]
+  Handle of the submission (last 6 of ID)
 [Origin]
   Originating ID. This is typically the ID of a different submission.
 [Parent]
