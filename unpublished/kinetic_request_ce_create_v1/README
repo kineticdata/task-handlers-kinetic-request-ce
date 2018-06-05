@@ -4,8 +4,10 @@ Creates the specified item.
 === Parameters
 [Error Handling]
     Determine what to return if an error is encountered. available menu choices: Error Message,Raise Error, default: Error Message
+[Domain/Server]
+    Domain/Server this space is on. Optional. Defaults to value provided in info values.
 [Space Slug]
-    The Space the submission is being created in. Optional
+    The Space the submission is being created in. Optional. Defaults to value provided in info values.
 [Type of Record to Create]
     Type of record you want to create. 
     Valid Values are: Space, Kapp, Bridge, Bridge Model, Categories, Form, Form Type, Team, User, Webhook, Security Policy Definition, Datastore Forms.
@@ -20,6 +22,7 @@ Creates the specified item.
 
 === Sample Configuration
 Error Handling:             Error Message
+Domain/Server:
 Space Slug:
 Type of Record to Create:   Form
 Kapp Slug:                  services

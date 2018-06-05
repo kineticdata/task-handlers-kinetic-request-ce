@@ -4,6 +4,8 @@ Retrieves the specified item.
 === Parameters
 [Error Handling]
     Determine what to return if an error is encountered. available menu choices: Error Message,Raise Error, default: Error Message
+[Domain/Server]
+    Domain/Server this space is on. Optional. Defaults to value provided in info values.
 [Space Slug]
     The Space the submission is being retrieved from. Optional
 [Type of Record to Retrieve]
@@ -20,6 +22,7 @@ Retrieves the specified item.
 
 === Sample Configuration
 Error Handling:             Error Message
+Domain/Server:
 Space Slug:
 Type of Record to Retrieve: Form
 Kapp Slug:                  services
