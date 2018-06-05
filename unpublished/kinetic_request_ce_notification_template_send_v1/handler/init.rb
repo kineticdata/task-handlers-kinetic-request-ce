@@ -8,7 +8,7 @@ class KineticRequestCeNotificationTemplateSendV1
   def initialize(input)
     # Set the input document attribute
     @input_document = REXML::Document.new(input)
-    
+
     # Retrieve all of the handler info values and store them in a hash variable named @info_values.
     @info_values = {}
     REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
@@ -34,8 +34,6 @@ class KineticRequestCeNotificationTemplateSendV1
     @smtp_from        =   @info_values['smtp_from_address']
     @api_username     =   URI.encode(@info_values['api_username'])
     @api_password     =   @info_values['api_password']
-    @api_server       =   @info_values['api_server']
-    @space_slug       =   @parameters['space_slug'].empty? ? @info_values['space_slug'] : @parameters['space_slug']
     @admin_kapp_slug  =   @parameters['admin_kapp_slug']
 
     @error_handling   = @parameters["error_handling"]
@@ -58,6 +56,15 @@ class KineticRequestCeNotificationTemplateSendV1
   # If it returns a result, it will be in a special XML format that the task engine expects. These
   # results will then be available to subsequent tasks in the process.
   def execute
+    space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      @api_server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      @api_server = @info_values['api_server']+"/"+space_slug
+    else
+      @api_server = @info_values['api_server']
+    end
+
     # Build Recipient JSON Based on input value. If not JSON, assume it's an email address
     begin
        @recipient_json = JSON.parse(@parameters["recipient_json"])
@@ -123,7 +130,7 @@ class KineticRequestCeNotificationTemplateSendV1
     record = getNotificationRecord(templateName)
 
     # Return nil if no Template was found
-    if record.nil? 
+    if record.nil?
       return record
     else
     # Return Record with Snippits Replaced
@@ -136,15 +143,15 @@ class KineticRequestCeNotificationTemplateSendV1
   ##########################################################################
   def getNotificationRecord(templateName)
     puts "Getting Notification Record: #{templateName}" if @enable_debug_logging
-    # Build up a query to retrieve the appropriate notification template    
+    # Build up a query to retrieve the appropriate notification template
     query = %|values[Name]="#{templateName}" AND values[Status]="Active"|
     # Build the API route for retrieving the notification template submissions based on the Query
-    route =  "#{@api_server}/#{@space_slug}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/notification-data/submissions" +
+    route =  "#{@api_server}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/notification-data/submissions" +
                       "?include=details,values&limit=1000&q=#{URI.escape(query)}"
     # Build a rest resource for calling the CE API
     resource = RestClient::Resource.new(route, { :user => @api_username, :password => @api_password })
     # Retrieve template records from the CE API
-    records = JSON.parse(resource.get)["submissions"] 
+    records = JSON.parse(resource.get)["submissions"]
     # Find the Record that matches the users preferences
     record = findClosestMatch(records, templateName)
     # Recursively Find all Snippits and Return the Final Content
@@ -171,10 +178,10 @@ class KineticRequestCeNotificationTemplateSendV1
     else
     # Select a template based on users preferences
     # Define an array of preferences for each record returned
-      recordPreferences = records.map do |record| 
-        { 
-          'id' => record['id'], 
-          'language' => record['values']['Language'], 
+      recordPreferences = records.map do |record|
+        {
+          'id' => record['id'],
+          'language' => record['values']['Language'],
           'region' => record['values']['Region'],
           'score' => 0,
         }
@@ -215,10 +222,10 @@ class KineticRequestCeNotificationTemplateSendV1
   ##########################################################################
   def replaceSnippitsInRecord(record)
     puts "Replacing Snippits In Record" if @enable_debug_logging
-    # Create a placeholder to store the 
+    # Create a placeholder to store the
     snippitNames = []
     snippitRecords = []
-    
+
     # Loop Over the Subject, HTML, Text of each Record and find Snippits if a value exists
     record.each do |field, value|
       if !value.nil?
@@ -264,7 +271,7 @@ class KineticRequestCeNotificationTemplateSendV1
     @replace_values.keys.each{|key|
       content = content.gsub(/\$\{#{key}\('(.*?)'\)\}/) do
         if @replace_values[key].has_key?($1)
-          @replace_values[key][$1] 
+          @replace_values[key][$1]
         else
           "${#{key}('#{$1}')}"
         end
@@ -273,7 +280,7 @@ class KineticRequestCeNotificationTemplateSendV1
 
     #Replace Dates
     #This does a "negative look ahead" to ensure it captures the entire quote string
-    content = content.gsub(/\$\{appearance\('(.*?)'\)\}(?!('\)\}))/) do 
+    content = content.gsub(/\$\{appearance\('(.*?)'\)\}(?!('\)\}))/) do
       #need to split into content and ${format()} sections
       thisContent=$1.split("$")
       #check if tag matches a valid date and if so convert first part into date and format it.
@@ -369,7 +376,7 @@ class KineticRequestCeNotificationTemplateSendV1
     begin
       # Retrieve all active date formats and populate the date_format_json object
       date_format_query = %|values[Status]="active"|
-      date_format_api_route = "#{@api_server}/#{@space_slug}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/notification-template-dates/submissions" +
+      date_format_api_route = "#{@api_server}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/notification-template-dates/submissions" +
                   "?include=details,values&limit=1000&q=#{URI.escape(date_format_query)}"
       date_format_resource = RestClient::Resource.new(date_format_api_route, { :user => @api_username, :password => @api_password })
       date_format_response = date_format_resource.get
@@ -413,7 +420,7 @@ class KineticRequestCeNotificationTemplateSendV1
       end
 
       # Post to the CE API
-      api_route = "#{@api_server}/#{@space_slug}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/messages/submissions"
+      api_route = "#{@api_server}/app/api/v1/kapps/#{@admin_kapp_slug}/forms/messages/submissions"
       resource = RestClient::Resource.new(api_route, { :user => @api_username, :password => @api_password })
       response = resource.post(data.to_json, { :accept => "json", :content_type => "json" })
       submission = JSON.parse(response)
@@ -427,7 +434,7 @@ class KineticRequestCeNotificationTemplateSendV1
       else
         puts "Error thrown While Creating Message in CE for User" if @enable_debug_logging
         @error_message = @error_message + "\nCreating Notifiation For User: #{error.http_code}: #{escape(error_message)}"
-        return {'submission_id' => nil, 'message_error' => "\nError Creating Notification: #{error.http_code}: #{escape(error_message)}"} 
+        return {'submission_id' => nil, 'message_error' => "\nError Creating Notification: #{error.http_code}: #{escape(error_message)}"}
       end
     end
   end

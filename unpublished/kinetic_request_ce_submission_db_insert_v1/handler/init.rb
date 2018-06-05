@@ -33,7 +33,7 @@ class KineticRequestCeSubmissionDbInsertV1
 #
 #######################################################################################################
   def initialize(input)
-  
+
     @db_column_size_limits = {
       :anonymous    => 36,
       :closedBy     => 255,
@@ -65,12 +65,12 @@ class KineticRequestCeSubmissionDbInsertV1
     ]
     @parameters = {}
     @table_temp_prefix = "tmp_"
-  
+
     if input.instance_of?(String) then
 
       # Set the input document attribute
       @input_document = REXML::Document.new(input)
-      
+
       # Retrieve all of the handler info values and store them in a hash variable named @info_values.
       REXML::XPath.each(@input_document, "/handler/infos/info") do |item|
         @info_values[item.attributes["name"]] = item.text.to_s.strip
@@ -84,9 +84,9 @@ class KineticRequestCeSubmissionDbInsertV1
       @enable_debug_logging = @info_values['enable_debug_logging'].downcase == 'yes' ||
                               @info_values['enable_debug_logging'].downcase == 'true'
       puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
-      
+
     elsif input.instance_of?(Hash) then
-    
+
       @info_values['host']              = input['host']
       @info_values['port']              = input['port']
       @info_values['jdbc_database_id']  = input['jdbc_database_id']
@@ -103,25 +103,25 @@ class KineticRequestCeSubmissionDbInsertV1
       @info_values['api_server']      = input['api_server']
       @info_values['first_bulk_load'] = input['first_bulk_load'].to_s.strip.downcase == "yes" ? true : false
       @info_values['ignore_updates']  = input['ignore_updates'].to_s.strip.downcase == "yes" ? true : false
-      
+
     end
-    
+
     host            = @info_values["host"]
     port            = @info_values["port"]
     database_name   = @info_values["database_name"]
     user            = @info_values["user"]
     password        = @info_values["password"]
-    
+
     max_connections = 1
     if @info_values['max_connections'].to_s =~ /\A[1-9]\d*\z/ then
-      max_connections = @info_values["max_connections"].to_i 
+      max_connections = @info_values["max_connections"].to_i
     end
-    
+
     pool_timeout = 10
     if @info_values['pool_timeout'].to_s =~ /\A[1-9]\d*\z/ then
-      pool_timeout = @info_values["pool_timeout"].to_i 
+      pool_timeout = @info_values["pool_timeout"].to_i
     end
-    
+
     # Attempt to connect to the database
     if @info_values["jdbc_database_id"].downcase == "sqlserver"
       @db = Sequel.connect("jdbc:#{@info_values["jdbc_database_id"]}://#{host}:#{port};database=#{database_name};user=#{user};password=#{password}", :max_connections => max_connections, :pool_timeout => pool_timeout)
@@ -144,12 +144,12 @@ class KineticRequestCeSubmissionDbInsertV1
       @db = Sequel.connect("jdbc:#{@info_values["jdbc_database_id"]}://#{host}:#{port}/#{database_name}?user=#{user}&password=#{password}", :max_connections => max_connections, :pool_timeout => pool_timeout)
     end
     @db.logger = Logger.new($stdout) if @enable_debug_logging
-    
+
     #Set max db identifier if info value is set to a valid positive integer.
     @max_db_identifier_size = @info_values["database_identifier_size"].strip.to_i if @info_values["database_identifier_size"].to_s.strip =~ /\A[1-9]\d*\z/
     #Decrement by 1 - used for string position truncating.
     @max_db_identifier_size -= 1
-    
+
   end
 
 #######################################################################################################
@@ -163,16 +163,22 @@ class KineticRequestCeSubmissionDbInsertV1
 #
 #######################################################################################################
   def execute(driver_parameters = nil)
-  
+    space_slug = get_param(@parameters, driver_parameters)["space_slug"].empty? ? @info_values["space_slug"] : get_param(@parameters, driver_parameters)["space_slug"]
+    if @info_values['api_server'].include?("${space}")
+      api_server = @info_values['api_server'].gsub("${space}", space_slug)
+    elsif !space_slug.to_s.empty?
+      api_server = @info_values['api_server']+"/"+space_slug
+    else
+      api_server = @info_values['api_server']
+    end
+
     @error_handling = get_param(@parameters, driver_parameters)["error_handling"]
-    
+
     if @info_values["api_username"].nil? == false then
       api_username    = URI.encode(@info_values["api_username"])
       api_password    = @info_values["api_password"]
     end
 
-    api_server        = @info_values["api_server"]
-    space_slug        = get_param(@parameters, driver_parameters)["space_slug"].empty? ? @info_values["space_slug"] : get_param(@parameters, driver_parameters)["space_slug"]
     submission_id     = get_param(@parameters, driver_parameters)["submission_id"]
     kapp_slug         = get_param(@parameters, driver_parameters)["kapp_slug"]
     form_slug         = get_param(@parameters, driver_parameters)["form_slug"]
@@ -180,22 +186,22 @@ class KineticRequestCeSubmissionDbInsertV1
     submission        = get_param(@parameters, driver_parameters)["submission_json"]
     submissions       = get_param(@parameters, driver_parameters)["submissions"]
     skip_table_create = get_param(@parameters, driver_parameters)["skip_table_create"].to_s.strip.downcase
-    
+
     error_message = nil
     error_backtrace = nil
     submission_database_id = nil
-    
+
     if submission.nil? == false then
       puts submission.inspect if @enable_debug_logging
     end
-      
+
     form_table_name     = get_form_table_name(kapp_slug, form_slug)
     kapp_table_name     = get_kapp_table_name(kapp_slug)
     tmp_form_table_name = get_form_table_name(kapp_slug, form_slug, {:is_temporary => true})
     tmp_kapp_table_name = get_kapp_table_name(kapp_slug, {:is_temporary => true})
 
     puts "submissions: #{submissions.inspect}" if @enable_debug_logging
-    
+
     # If this is a bulk insert...
     if submissions.nil? == false then
 
@@ -340,27 +346,27 @@ class KineticRequestCeSubmissionDbInsertV1
         form_columns,
         new_form_submissions
       )
-      
+
       # Import all records from temp kapp table into the real kapp table, excluding records where the c_id is already in the main kapp table
       @db[kapp_table_name.to_sym].import(
-        kapp_columns, 
+        kapp_columns,
         @db[Sequel.as(tmp_kapp_table_name.to_sym, :tmp_kapp)].select{
           kapp_columns.map {|col| Sequel[:tmp_kapp][col]}
         }.left_outer_join(
           Sequel.as(kapp_table_name.to_sym, :kapp), :c_id => :c_id
         ).where(Sequel[:kapp][:c_id] => nil)
       )
-      
+
       # Import all records from temp form table into the real form table, excluding records where the c_id is already in the form table
       @db[form_table_name.to_sym].import(
-        form_columns, 
+        form_columns,
         @db[Sequel.as(tmp_form_table_name.to_sym, :tmp_form)].select{
           form_columns.map {|col| Sequel[:tmp_form][col]}
         }.left_outer_join(
           Sequel.as(form_table_name.to_sym, :form), :c_id => :c_id
         ).where(Sequel[:form][:c_id] => nil)
       )
-      
+
     else
 
       db_column_size_limits = @db_column_size_limits
@@ -373,7 +379,7 @@ class KineticRequestCeSubmissionDbInsertV1
           :c_id => submission["id"],
           :c_deletedAt => DateTime.parse(submission_delete)
         }
-        
+
         # for both the kapp & form table...
         [kapp_table_name.to_sym, form_table_name.to_sym].each do |table_name|
           # if the record does *not* exist in the table
@@ -392,7 +398,7 @@ class KineticRequestCeSubmissionDbInsertV1
 
         #If passed in a submission id by the task engine, retireve the submission information.
         if submission_id.nil? == false then
-          api_route = "#{api_server}/#{space_slug}/app/api/v1/submissions/#{submission_id}/?include=details,descendents,form,form.details,form.fields.details,type,form.kapp,values"
+          api_route = "#{api_server}/app/api/v1/submissions/#{submission_id}/?include=details,descendents,form,form.details,form.fields.details,type,form.kapp,values"
           puts "API ROUTE: #{api_route}" if @enable_debug_logging
           resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
           response = resource.get
@@ -403,9 +409,9 @@ class KineticRequestCeSubmissionDbInsertV1
           submission_values = submission['values']
           form_definition = submission['form']
         end
-        
+
         unlimited_column_names_by_field, limited_column_names_by_field = get_column_names(submission_values)
-        
+
         if skip_table_create != "yes" then
           generate_column_def_table()
           generate_table_def_table()
@@ -417,7 +423,7 @@ class KineticRequestCeSubmissionDbInsertV1
           generate_kapp_table(
             get_kapp_table_name(kapp_slug)
           )
-          
+
           insert_table_definition({
             :form_slug => form_slug,
             :kapp_slug => kapp_slug,
@@ -426,7 +432,7 @@ class KineticRequestCeSubmissionDbInsertV1
             :form_definition => form_definition
           })
         end
-      
+
         puts "Submission values: (#{submission_values.inspect})" if @enable_debug_logging
 
         originId = nil
@@ -437,10 +443,10 @@ class KineticRequestCeSubmissionDbInsertV1
         if (submission['parent'].nil? == false && submission['parent'].has_key?('id')) then
           parentId = submission['parent']['id']
         end
-        
+
         #Kapp general submission DB transaction.
         @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
-        
+
           ce_submission = {
             :c_id => submission['id'],
             :c_formSlug => form_slug,
@@ -461,12 +467,12 @@ class KineticRequestCeSubmissionDbInsertV1
             ce_submission[unlimited_field] = submission['values'][field]
             ce_submission[limited_field] = limited_value
           end
-          
+
           #only set the datetime values if they're not null, and set them as a proper datetime object.
           ["closedAt", "createdAt", "submittedAt", "updatedAt"].each do |actionTimestamp|
             ce_submission["c_#{actionTimestamp}".to_sym] = DateTime.parse(submission[actionTimestamp]) if submission[actionTimestamp].nil? == false
           end
-        
+
           # if the record does not exist in the database, insert it.
           if @info_values['first_bulk_load'] || @db[kapp_table_name.to_sym].select(:c_id).where(:c_id => submission["id"]).count == 0 then
             @db[kapp_table_name.to_sym].insert(ce_submission)
@@ -476,13 +482,13 @@ class KineticRequestCeSubmissionDbInsertV1
               Sequel.lit('"c_id" = ? and "c_updatedAt" < ?', submission['id'], ce_submission[:c_updatedAt]
             )).update(ce_submission) unless @info_values['ignore_updates']
           end
-          
+
         #end general kapp submission database transaction
         end
-        
+
         puts "Submission values: (#{submission_values.inspect})" if @enable_debug_logging
 
-        #Form submission DB transaction.      
+        #Form submission DB transaction.
         @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
 
           # Once the table has been created/modified/verified, insert the submission into the table
@@ -497,12 +503,12 @@ class KineticRequestCeSubmissionDbInsertV1
             :c_submittedBy => submission["submittedBy"],
             :c_updatedBy => submission["updatedBy"]
           }
-          
+
           # only set the datetime values if they're not null, and set them as a proper datetime object.
           ["closedAt", "createdAt", "submittedAt", "updatedAt"].each do |actionTimestamp|
             form_db_submission["c_#{actionTimestamp}".to_sym] = DateTime.parse(submission[actionTimestamp]) if submission[actionTimestamp].nil? == false
           end
-          
+
           # value.to_s is necessary for attachment and multi-value answers which are not stored as JSON strings
           submission_values.each { |field,value|
             #ternary: if value is nil, use nil - else use the value converted to a string.
@@ -523,7 +529,7 @@ class KineticRequestCeSubmissionDbInsertV1
       end
     #end statement for else statement for if this is a bulk submission insert.
     end
-        
+
     rescue Exception => e
       if @error_handling == "Error Message"
         error_message = e.message
@@ -557,14 +563,14 @@ class KineticRequestCeSubmissionDbInsertV1
 
 ##########################################################################################################
 #
-# get_field_column_name 
+# get_field_column_name
 #
-# Returns a column name for a field name on a form. Handles scenarios for when a field name is loner than 
+# Returns a column name for a field name on a form. Handles scenarios for when a field name is loner than
 # what column lengths support and prefixes the column name with a u or an l to indicate if it is an unlimited
 # length column or a limited length column.
 #
 ##########################################################################################################
-  
+
   def get_field_column_name(args)
     #expected args => :unlimited, :field
     prefix = args[:unlimited] ? "u_" : "l_"
@@ -582,12 +588,12 @@ class KineticRequestCeSubmissionDbInsertV1
 
 ##########################################################################################################
 #
-# get_form_table_name 
+# get_form_table_name
 #
 # Returns a form table name for a form based on kapp slug and form slug. Handles temporary tables & checks if a CRC16 checksum is necessary to append
 #
 ##########################################################################################################
-  
+
   def get_form_table_name(kapp_slug, form_slug, options = {})
     form_table_name = "#{kapp_slug}_#{form_slug}"
     form_table_name.prepend(@table_temp_prefix) if options[:is_temporary]
@@ -598,21 +604,21 @@ class KineticRequestCeSubmissionDbInsertV1
     else
       new_table_name = form_table_name
     end
-    
+
     puts "Form table name: #{new_table_name}" if @enable_debug_logging
-    
+
     new_table_name
-    
+
   end
 
 ##########################################################################################################
 #
-# get_kapp_table_name 
+# get_kapp_table_name
 #
 # Returns a kapp table name for a kapp slug. Handles temporary tables & checks if a CRC16 checksum is necessary to append
 #
 ##########################################################################################################
-  
+
   def get_kapp_table_name(kapp_slug, options = {})
     kapp_table_name = "#{kapp_slug}"
     kapp_table_name.prepend(@table_temp_prefix) if options[:is_temporary]
@@ -623,22 +629,22 @@ class KineticRequestCeSubmissionDbInsertV1
     else
       new_table_name = kapp_table_name
     end
-    
+
     puts "Kapp table name: #{new_table_name}" if @enable_debug_logging
-    
+
     new_table_name
-    
+
   end
 
 ##########################################################################################################
 #
-# generate_column_def_table 
+# generate_column_def_table
 #
 # generates the column definition table. This table helps map form fields to their column names in form tables.
 # Useful for columns that have to use a CRC16 checksum to shorten their column name.
 #
 ##########################################################################################################
-  
+
   def generate_column_def_table()
     table_def_name = "column_definitions"
     # If the table doesn't already exist, create it
@@ -659,16 +665,16 @@ class KineticRequestCeSubmissionDbInsertV1
 
 ##########################################################################################################
 #
-# generate_table_def_table 
+# generate_table_def_table
 #
 # generates the table definition table. This table helps map forms to their table names.
 # Useful for tables that have to use a CRC16 checksum to shorten their table name.
 #
 ##########################################################################################################
-  
+
   def generate_table_def_table()
     table_def_name = "table_definitions"
-    
+
     # If the table doesn't already exist, create it
     puts "Creating table definition table (#{table_def_name}) if it doesn't exist." if @enable_debug_logging
     db_column_size_limits = @db_column_size_limits
@@ -684,15 +690,15 @@ class KineticRequestCeSubmissionDbInsertV1
 
 ##########################################################################################################
 #
-# insert_column_definition 
+# insert_column_definition
 #
 # Insert a record into a column definition table for defining a new form field column being adding to a form table.
 # This helps map a full length field name to a column name in a form table.
 #
 ##########################################################################################################
-  
+
   def insert_column_definition(args)
-    
+
     submission_database_id = nil
     submission = args[:submission]
     column_name = args[:column_name]
@@ -700,16 +706,16 @@ class KineticRequestCeSubmissionDbInsertV1
     form_table_name = args[:form_table_name]
     kapp_slug = args[:kapp_slug]
     form_slug = args[:form_slug]
-    
+
     field_id_lookup = {}
     submission['form']['fields'].each do |field|
       id = field['key']
       name = field['name']
       field_id_lookup[name] = id
     end
-    
+
     table_def_name = "column_definitions"
-    
+
     #Table definition generation.
     # Once the table has been created/modified/verified, insert the submission into the table
     db_submission = {
@@ -720,7 +726,7 @@ class KineticRequestCeSubmissionDbInsertV1
       :fieldKey => field_id_lookup[ce_field],
       :columnName => column_name
     }
-    
+
     puts "Inserting the column definition for the column name '#{column_name}'" if @enable_debug_logging
     db_submissions = @db[table_def_name.to_sym]
     #if db_submissions.select(:tableName).where(:tableName => form_table_name, :columnName => column_name).for_update.first.nil? then
@@ -731,31 +737,31 @@ class KineticRequestCeSubmissionDbInsertV1
     end
 
     submission_database_id
-    
+
   end
 
 ##########################################################################################################
 #
-# insert_table_definition 
+# insert_table_definition
 #
 # Insert a record into a table definition for defining a new table being created in the database. Includes full form name and slug.
 #
 ##########################################################################################################
-  
+
   def insert_table_definition(args)
-  
+
     submission_database_id = nil
     submission = args[:submission]
     form_definition = args[:form_definition]
     form_table_name = args[:form_table_name]
     kapp_slug = args[:kapp_slug]
     form_slug = args[:form_slug]
-    
+
     table_def_name = "table_definitions"
-  
+
     #Table definition generation.
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
-      
+
       # Once the table has been created/modified/verified, insert the submission into the table
       db_submission = {
         :tableName => form_table_name,
@@ -772,19 +778,19 @@ class KineticRequestCeSubmissionDbInsertV1
           submission_database_id = db_submissions.where(:tableName => form_table_name).update(db_submission) unless @info_values['ignore_updates']
         end
     end
-    
+
     submission_database_id
-    
+
   end
 
 ##########################################################################################################
 #
-# update_form_table_columns? 
+# update_form_table_columns?
 #
 # Updates the form table with new columns, based on submission values, if they do not already exist on the table.
 #
 ##########################################################################################################
-  
+
   def update_form_table_columns?(args)
 
     submission        = args[:submission]
@@ -794,14 +800,14 @@ class KineticRequestCeSubmissionDbInsertV1
     unlimited_column_names_by_field, limited_column_names_by_field = get_column_names(submission_values)
 
     form_table_name = get_form_table_name(kapp_slug, form_slug, {:is_temporary => args[:is_temporary]})
-    
+
     # If the table exists, check to see if the submission values match up with
     # the table columns. If a column doesn't exist, add it
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
       columns = get_table_column_names(form_table_name.to_sym)
       columns_to_add = []
       column_to_field_name = {}
-      
+
       submission_values.each do |field,value|
         sql_column_unlimited = unlimited_column_names_by_field[field]
         sql_column_limited = limited_column_names_by_field[field]
@@ -827,12 +833,12 @@ class KineticRequestCeSubmissionDbInsertV1
         }
       end
     end
-    
+
   end
 
 ##########################################################################################################
 #
-# generate_kapp_table 
+# generate_kapp_table
 #
 # Creates the kapp table if it does not already exist.
 #
@@ -873,7 +879,7 @@ class KineticRequestCeSubmissionDbInsertV1
         String :c_updatedBy, :size => db_column_size_limits[:updatedBy], :unicode => true
         String :c_type, :size => db_column_size_limits[:type]
         kapp_fields.each do |field|
-          send("String",kapp_unlimited_column_name[field], :text => true, :unicode => true) 
+          send("String",kapp_unlimited_column_name[field], :text => true, :unicode => true)
           send("String",kapp_limited_column_name[field], :text => true, :unicode => true, :size => db_column_size_limits[:formField])
         end
       end
@@ -882,12 +888,12 @@ class KineticRequestCeSubmissionDbInsertV1
 
 ##########################################################################################################
 #
-# generate_form_table 
+# generate_form_table
 #
 # Generates the form table and creates column definition records for every field on the form (for both the limited and unlimited length columns)
 #
 ##########################################################################################################
-  
+
   def generate_form_table(args)
     form_table_name = get_form_table_name(
       args[:kapp_slug],
@@ -899,7 +905,7 @@ class KineticRequestCeSubmissionDbInsertV1
     db_options = {}
     db_options[:temp]                    = true if args[:is_temporary]
     db_options[:on_commit_preserve_rows] = true if args[:is_temporary] && @info_values["jdbc_database_id"].downcase == "oracle"
-    
+
     db_column_size_limits = @db_column_size_limits
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
       # If the table doesn't already exist, create it
@@ -921,12 +927,12 @@ class KineticRequestCeSubmissionDbInsertV1
         DateTime :c_updatedAt
         String :c_updatedBy, :size => db_column_size_limits[:updatedBy], :unicode => true
         submission['values'].each do |field,value|
-          send("String",unlimited_column_names_by_field[field].to_sym, :text => true, :unicode => true) 
+          send("String",unlimited_column_names_by_field[field].to_sym, :text => true, :unicode => true)
           send("String",limited_column_names_by_field[field].to_sym, :text => true, :unicode => true, :size => db_column_size_limits[:formField])
         end
       end
     end
-    
+
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
       submission['values'].each do |field,value|
         insert_column_definition({
@@ -947,24 +953,24 @@ class KineticRequestCeSubmissionDbInsertV1
         })
       end
     end
-    
+
   end
 
 ##########################################################################################################
 #
-# create_or_update_form_table 
+# create_or_update_form_table
 #
 # either creates a form table along with adding a definition entry or updates the columns in the existing table
 #
 ##########################################################################################################
-  
+
   def create_or_update_form_table(args)
     form_table_name = get_form_table_name(
       args[:kapp_slug],
       args[:form_slug],
       {:is_temporary => args[:is_temporary]}
     )
-    
+
     if @db.table_exists?(form_table_name.to_sym) == false then
       generate_form_table({
         :kapp_slug => args[:kapp_slug],
@@ -987,7 +993,7 @@ class KineticRequestCeSubmissionDbInsertV1
         :is_temporary => args[:is_temporary]
       })
     end
-    
+
   end
 
 ##########################################################################################################
@@ -995,7 +1001,7 @@ class KineticRequestCeSubmissionDbInsertV1
 # get_column_names returns table column names for form fields, both limited and unlimited length.
 #
 ##########################################################################################################
-  
+
   def get_column_names(submission_values)
     unlimited_column_names_by_field = {}
     limited_column_names_by_field = {}
@@ -1005,7 +1011,7 @@ class KineticRequestCeSubmissionDbInsertV1
     end
     return unlimited_column_names_by_field, limited_column_names_by_field
   end
-  
+
 ##########################################################################################################
 #
 # get_table_column_names returns an array of the columns for a specified database table.
@@ -1023,7 +1029,7 @@ class KineticRequestCeSubmissionDbInsertV1
 # used for distinguishing parameters passed in either by Task or the backfill script.
 #
 ##########################################################################################################
-  
+
   def get_param(parameters, driver_parameters)
     if driver_parameters.nil? == false then
       driver_parameters

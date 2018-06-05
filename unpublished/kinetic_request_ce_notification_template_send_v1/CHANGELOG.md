@@ -1,2 +1,6 @@
-== Kinetic Request CE Notification Template Send V1 (2017-02-10)
+Kinetic Request CE Notification Template Send V1.1 (2018-06-05)
+* API Server Info Value changed to allow ${space} in the url for subdomain support
+(ie. https://${space}.localhost:8080/kinetic)
+
+Kinetic Request CE Notification Template Send V1 (2017-02-10)
  * Initial version.  See README for details.
