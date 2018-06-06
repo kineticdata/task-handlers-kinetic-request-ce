@@ -11,6 +11,6 @@
     'space_slug' => '',
     'kapp_slug' => 'services',
     'form_slug' => 'cleaning',
-    'query' => 'q=values[Status]="Complete"'
+    'query' => 'values[Status]="Complete"'
   }
 }
