@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+This file contains a list of all configurable values used by the task node.
+
+The name of the parameter is defined by applying the 'name' attribute to the
+info tag.  For example, to define a parameter named 'username' add the
+following line:
+<info name="username" description="The username used to login"></info>
+
+Default values may be defined by placing the value of the parameter
+within the info tags.  For example, to define a parameter named 'username'
+with a default value of 'KD_WEBUSER' add the following line:
+<info name="username">KD_WEBUSER</info>
+-->
 <taskInfo version="1.0">
   <info name="smtp_server" required="true" description="Email server name or IP address.">smtp.yourcompany.com</info>
   <info name="smtp_port" required="true" description="TCP port the email server is listening on.">25</info>
