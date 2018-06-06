@@ -1,51 +1,5 @@
 # Require the necessary core libraries.
-require 'java'
 require 'rexml/document'
-
-# Determine the path to the handler
-handler_path = File.expand_path(File.dirname(__FILE__))
-
-# Require the necessary java libraries
-require File.join(handler_path, 'kinetic_request_ce_notification_template_send_handler_helper')
-require File.join(handler_path, 'lib', 'smtp.jar')
-require File.join(handler_path, 'lib', 'mailapi.jar')
-require File.join(handler_path, 'lib', 'commons-email-1.2.jar')
-
-# If we are using a Java prior to 1.6, where the necessary files became included
-# in the standard library, manually include the activation.jar.
-if java.lang.System.getProperty('java.class.version').to_i < 50
-  # Require the activation jar
-  require File.join(handler_path, 'lib', 'activation.jar')
-# If we are using Java 1.6 or later, implement a JRuby classpath fix for Email
-else
-  # There is a problem with the JRuby classloading when using Java 6 that
-  # prevents the proper Mime mappings from being retrieved.  This is a
-  # workaround to fix the classpath used by org.apache.commons.mail.HtmlEmail
-  # during send.
-  org.apache.commons.mail.HtmlEmail.module_eval do
-    # Alias the original 'send' method name to 'send_without_jruby_fix'
-    alias_method :send_without_jruby_fix, :send
-    # Redefine the send method
-    def send()
-      # Spawn a new thread so that we are not manipulating the current classloader
-      thread = Thread.new do
-        begin
-          # Overwrite the current classloader
-          java.lang.Thread.currentThread().setContextClassLoader(java_class.class_loader)
-          # Call the old send method
-          Thread.current['kinetic/task/KineticRequestCeNotificationTemplateSendV1/result'] = {"success" => true}
-          Thread.current['kinetic/task/KineticRequestCeNotificationTemplateSendV1/result']['id'] = send_without_jruby_fix()
-        rescue Exception => e
-          Thread.current['kinetic/task/KineticRequestCeNotificationTemplateSendV1/result'] = {"success" => false,"exception" => e}
-        end
-      end
-      # Wait for the thread to complete
-      thread.join
-      # Return the thread result
-      return thread['kinetic/task/KineticRequestCeNotificationTemplateSendV1/result']
-    end
-  end
-end
 
 # If the Kinetic Task version is under 4, load the openssl and json libraries
 # because they are not included in the ruby version
@@ -146,4 +100,26 @@ if not defined?(RestClient.version)
   raise "The RestClient class does not define the expected VERSION constant."
 elsif RestClient.version.to_s != "1.6.7"
   raise "Incompatible library version #{RestClient.version} for rest-client.  Expecting version 1.6.7."
+end
+
+
+
+# Load the Mail gem unless it has already been loaded.  This prevents
+# multiple handlers using the same library from causing problems.
+if not defined?(Mail)
+  # Calculate the location of this file
+  handler_path = File.expand_path(File.dirname(__FILE__))
+  # Calculate the location of our library and add it to the Ruby load path
+  library_path = File.join(handler_path, "vendor/mail-2.6.4/lib/")
+  $:.unshift library_path
+  # Require the library
+  require "mail"
+end
+
+# Validate the Mail gem is the library that is expected for
+# this handler to execute properly.
+if not defined?(Mail::VERSION.version)
+  raise "The Mail class does not define the expected VERSION constant."
+elsif Mail::VERSION.version != "2.6.4"
+  raise "Incompatible library version #{Mail::VERSION.version} for Mail.  Expecting version 2.6.4."
 end
