@@ -68,6 +68,8 @@ Submission Id:
   Name of the submission's kapp
 [Kapp Slug]
   Slug of the submission's kapp
+[Values JSON]
+  JSON Result of submission's Values
 
 
 === Detailed Description
