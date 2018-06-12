@@ -39,14 +39,17 @@ class KineticRequestCeSubmissionRetrieveV2
     begin
       api_username    = URI.encode(@info_values["api_username"])
       api_password    = @info_values["api_password"]
+      kapp_slug      = @parameters["kapp_slug"]
+      form_slug      = @parameters["form_slug"]
 
       api_route = "#{server}/app/api/v1"
-      includes = "details,origin,parent,children,descendents,form,type,form.kapp"
+      includes = "details,origin,values,parent,children,form,type,form.kapp"
       if @parameters['retrieve_by'] == "Id"
         api_route += "/submissions/#{@parameters["submission_id"]}?include=#{includes}"
       elsif @parameters['retrieve_by'] == "Query"
-        api_route += "/kapps/#{@parameters['kapp_slug']}/forms/#{@parameters['form_slug']}/submissions"
-        api_route += "?include=#{includes}&q=#{URI.encode(@parameters['query'])}&limit=1"
+        api_route = "#{server}/app/api/v1/kapps/#{kapp_slug}"
+        api_route += "/forms/#{form_slug}" if !form_slug.to_s.empty?
+        api_route += "/submissions?include=#{includes}&q=#{URI.encode(@parameters['query'])}&limit=1"
       else
         raise "Retrieve By type '#{@parameters['retrieve_by']}' not supported"
       end
@@ -68,6 +71,7 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Origin"></result>
           <result name="Parent"></result>
           <result name="Submitted At"></result>
+          <result name="Submitted By"></result>
           <result name="Type"></result>
           <result name="Updated At"></result>
           <result name="Updated By"></result>
@@ -82,6 +86,8 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Form Status"></result>
           <result name="Kapp Name"></result>
           <result name="Kapp Slug"></result>
+          <result name="Current Page"></result>
+          <result name="Values JSON"></result>
         </results>
         RESULTS
       else
@@ -95,6 +101,7 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Origin">#{escape(results['origin'].to_json)}</result>
           <result name="Parent">#{escape(results['parent'].to_json)}</result>
           <result name="Submitted At">#{escape(results['submittedAt'])}</result>
+          <result name="Submitted By">#{escape(results['submittedBy'])}</result>
           <result name="Type">#{escape(results['type'])}</result>
           <result name="Updated At">#{escape(results['updatedAt'])}</result>
           <result name="Updated By">#{escape(results['updatedBy'])}</result>
@@ -109,6 +116,8 @@ class KineticRequestCeSubmissionRetrieveV2
           <result name="Form Status">#{escape(results['form']['status'])}</result>
           <result name="Kapp Name">#{escape(results['form']['kapp']['name'])}</result>
           <result name="Kapp Slug">#{escape(results['form']['kapp']['slug'])}</result>
+          <result name="Current Page">#{escape(results['currentPage'])}</result>
+          <result name="Values JSON">#{escape(results['values'].to_json)}</result>
         </results>
         RESULTS
       end

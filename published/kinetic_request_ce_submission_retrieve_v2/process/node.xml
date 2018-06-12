@@ -57,6 +57,7 @@
         <result name="Origin"/>
         <result name="Parent"/>
         <result name="Submitted At"/>
+        <result name="Submitted By"/>
         <result name="Type"/>
         <result name="Updated At"/>
         <result name="Updated By"/>
@@ -71,5 +72,7 @@
         <result name="Form Status"/>
         <result name="Kapp Name"/>
         <result name="Kapp Slug"/>
+        <result name="Current Page"/>
+        <result name="Values JSON"/>
     </results>
 </taskDefinition>

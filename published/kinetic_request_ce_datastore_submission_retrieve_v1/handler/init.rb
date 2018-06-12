@@ -101,6 +101,7 @@ class KineticRequestCeDatastoreSubmissionRetrieveV1
           <result name="Label">#{escape(results['label'])}</result>
           <result name="Handle">#{escape(results['handle'])}</result>
           <result name="Core State">#{escape(results['coreState'])}</result>
+          <result name="Current Page">#{escape(results['currentPage'])}</result>
           <result name="Submitted At">#{escape(results['submittedAt'])}</result>
           <result name="Submitted By">#{escape(results['submittedBy'])}</result>
           <result name="Updated At">#{escape(results['updatedAt'])}</result>
