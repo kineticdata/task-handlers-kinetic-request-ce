@@ -22,7 +22,7 @@
         </infos>
         <parameters>
             <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
-			<parameter name="usernames">&lt;%= @parameters['usernames'] %&gt;</parameter>
+			      <parameter name="usernames">&lt;%= @parameters['usernames'] %&gt;</parameter>
         </parameters>
     </handler>
     <results format="xml">

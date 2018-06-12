@@ -41,6 +41,8 @@ Submission Id:
   Parent ID.
 [Submitted At]
   Submitted Date/Time
+[Submitted By]
+  User that submitted the submission
 [Type]
 [Updated At]
   Closed Date/Time
@@ -68,6 +70,8 @@ Submission Id:
   Name of the submission's kapp
 [Kapp Slug]
   Slug of the submission's kapp
+[Current Page]
+  The Current Page of the submission
 [Values JSON]
   JSON Result of submission's Values
 

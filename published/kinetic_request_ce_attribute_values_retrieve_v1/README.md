@@ -3,7 +3,7 @@ Returns the attributes for the highest object provided, and all it's parent attr
 
 For instance, if just the space slug is provided, the space attributes will be returned.  If the
 space and kapp slugs are provided, then the space attributes and the kapp attributes will
-be returned.  If the form kapp, and space slugs are all provided, then the space attributes, the 
+be returned.  If the form, kapp, and space slugs are all provided, then the space attributes, the
 kapp attributes, and the form attributes will all be returned.
 
 === Parameters
@@ -15,6 +15,12 @@ kapp attributes, and the form attributes will all be returned.
   The Slug of the Kapp to search.
 [Form Slug]
   The Slug of the Form to search.
+
+=== Sample Configuration
+Error Handling:           Error Message
+Space Slug:               test-space
+Kapp Slug:                test-kapp
+Form Slug:                test-form
 
 === Results
 [Handler Error Message] (if appropriate)
