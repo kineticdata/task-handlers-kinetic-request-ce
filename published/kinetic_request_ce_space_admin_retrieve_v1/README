@@ -2,23 +2,23 @@
 Retrieves space admins from a space for Kinetic Request CE.
 
 === Parameters
-[SpaceSlug]
+[Error Handling]
+  Determine what to return if an error is encountered. (Raise Error or Error Message)
+[Space Slug]
   The Space slug to be searched. If this value is not entered, the
   Space slug will default to the one configured in info values.
 
-
-
 === Sample Configuration
-Space:      acme
-
+Error Handling:    Error Message
+Space Slug:        my-space
 
 === Results
-[usernames]
+[Handler Error Message]
   Usernames of the space admins (comma delimited)
-[emails]
+[Usernames]
+  Usernames of the space admins (comma delimited)
+[Emails]
   Emails of the space admins (comma delimited).
-
-
 
 === Detailed Description
 This handler returns the space admins for the provided space.

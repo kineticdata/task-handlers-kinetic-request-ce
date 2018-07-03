@@ -1,0 +1,24 @@
+== Kinetic Request CE User Retrieve From List
+Retrieves a JSON array of the users provided in a CSV format from Kinetic Request CE
+
+=== Parameters
+[Space Slug]
+  The Space slug to be searched. If this value is not entered, the
+  Space slug will default to the one configured in info values.
+[Username List]
+	Comma separated list of usernames to retrieve.
+
+
+=== Sample Configuration
+Space:           acme
+Username List:   test@example.com,test2@example.com
+
+=== Results
+[User Details JSON]
+  Username of user.
+[Users Not Found JSON]
+  Display name of user.
+
+
+=== Detailed Description
+Retrieves specified user records from Kinetic Request CE for the specified space. Returns JSON.

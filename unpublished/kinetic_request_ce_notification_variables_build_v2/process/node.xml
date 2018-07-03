@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taskDefinition id="kinetic_request_ce_notification_variables_build" name="Kinetic Request CE Notification Variables Build" schema_version="1.0" version="2">
+    <author>support@kineticdata.com</author>
+    <description>
+        Builds Replacement Variables for Notifications.
+    </description>
+    <helpurl></helpurl>
+    <visible>false</visible>
+    <deferrable>false</deferrable>
+    <parameters>
+        <parameter id="error_handling" label="Error Handling" required="true"
+          tooltip="Determine what to return if an error is encountered." menu="Error Message,Raise Error">Error Message</parameter>
+        <parameter id="space_slug" label="Space Slug" required="false"
+          tooltip="The Slug of the space to retrieve variables from."/>
+        <parameter id="is_datastore" label="Is Datastore" required="true" menu="Yes,No"
+          tooltip="Is this for a datastore submission?">No</parameter>
+        <parameter id="kapp_slug" label="Kapp Slug" required="false" 
+          tooltip="The Slug of the kapp to retrieve variables from."  
+          dependsOnId="is_datastore" dependsOnValue="No" />
+        <parameter id="form_slug" label="Form Slug" required="false"
+          tooltip="The Slug of the form to retrieve variables from."/>
+        <parameter id="submission_id" label="Submission Id" required="false"
+          tooltip="The id of the submission to retrieve variables from."/>
+        <parameter id="username" label="CE Username" required="false"
+          tooltip="The username of the user to retrieve variables for (CE USERS ONLY)"/>
+        <parameter id="addt_vars" label="Additional Variables" required="false"
+          tooltip="A JSON String of additional Variables to be used in Replacements"/>
+        <parameter id="backups" label="Backup Variables" required="false"
+          tooltip="A JSON String of Backup Variables to be used in Replacements if Missing"/>
+    </parameters>
+    <handler name="kinetic_request_ce_notification_variables_build" version="2">
+        <infos>
+            <info name="api_password">&lt;%= @info['api_password'] %&gt;</info>
+            <info name="api_server">&lt;%= @info['api_server'] %&gt;</info>
+            <info name="api_username">&lt;%= @info['api_username'] %&gt;</info>
+            <info name="space_slug">&lt;%= @info["space_slug"] %&gt;</info>
+            <info name="enable_debug_logging">&lt;%= @info['enable_debug_logging'] %&gt;</info>
+        </infos>
+        <parameters>
+            <parameter name="error_handling">&lt;%= @parameters.has_key?("error_handling") ? @parameters["error_handling"] : "Raise" %&gt;</parameter>
+            <parameter name="space_slug">&lt;%= @parameters["space_slug"] %&gt;</parameter>
+            <parameter name="is_datastore">&lt;%= @parameters["is_datastore"] %&gt;</parameter>
+            <parameter name="kapp_slug">&lt;%= @parameters["kapp_slug"] %&gt;</parameter>
+            <parameter name="form_slug">&lt;%= @parameters["form_slug"] %&gt;</parameter>
+            <parameter name="submission_id">&lt;%= @parameters['submission_id'] %&gt;</parameter>
+            <parameter name="username">&lt;%= @parameters['username'] %&gt;</parameter>
+            <parameter name="addt_vars">&lt;%= @parameters['addt_vars'] %&gt;</parameter>
+            <parameter name="backups">&lt;%= @parameters['backups'] %&gt;</parameter>
+        </parameters>
+    </handler>
+    <results format="xml">
+        <result name="Handler Error Message"/>
+        <result name="Replacement Variables"/>
+    </results>
+</taskDefinition>
