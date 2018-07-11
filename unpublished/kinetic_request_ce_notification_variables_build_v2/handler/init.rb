@@ -224,6 +224,12 @@ class KineticRequestCeNotificationVariablesBuildV2
         buildKappVariables({"kapp" => data[key]})
       end
 
+      # Pass Kapp Object to the Build Space Variables Routine to Handle the Rest 
+      # (for Datastore submissions)
+      if key == "space"
+        buildSpaceVariables({"space" => data[key]})
+      end
+
     end
   end
 
