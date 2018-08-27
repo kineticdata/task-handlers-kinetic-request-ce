@@ -53,7 +53,7 @@ class KineticRequestCeAttachmentCopyV1
     imported_file_details = []
 
      # Submission API Route including Values
-      submission_api_route = server
+      submission_api_route = server +
                              "/app/api/v1/submissions/" +
                              URI.escape(submission_id) +
                              "/?include=values"
