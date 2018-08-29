@@ -44,6 +44,8 @@ class KineticRequestCeSubmissionUpdateObserversV1
     values = {}
 
     begin
+      # Set a retries variable in case of stale object exceptions (multiple threads updating the same submission)
+      retries ||= 0
       api_route = "#{server}/app/api/v1/submissions/#{submission_id}"
 
       # Build Resource to get submission values and form fields
@@ -131,7 +133,18 @@ class KineticRequestCeSubmissionUpdateObserversV1
         result = resource.put(data.to_json, { :accept => "json", :content_type => "json" })
       end
     rescue RestClient::Exception => error
-      error_message = "#{error.http_code}: #{JSON.parse(error.response)["error"]}"
+      code = error.http_code
+      message = JSON.parse(error.response)["error"]
+
+      # Retry the handler if stale object exception
+      if code == 500 && message.include?("has been updated or deleted by another user")
+        if (retries += 1) < 10
+          puts "Retrying Because of Stale Object Exception. Retry Number #{retries.to_s}"
+          retry
+        end
+      end
+
+      error_message = "#{code}: #{message}"
       raise error_message if error_handling == "Raise Error"
     rescue Exception => error
       error_message = error.inspect
