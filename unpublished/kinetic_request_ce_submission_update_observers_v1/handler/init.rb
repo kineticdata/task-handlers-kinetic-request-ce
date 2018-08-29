@@ -138,7 +138,7 @@ class KineticRequestCeSubmissionUpdateObserversV1
 
       # Retry the handler if stale object exception
       if code == 500 && message.include?("has been updated or deleted by another user")
-        if (retries += 1) < 5
+        if (retries += 1) < 10
           puts "Retrying Because of Stale Object Exception. Retry Number #{retries.to_s}"
           retry
         end
