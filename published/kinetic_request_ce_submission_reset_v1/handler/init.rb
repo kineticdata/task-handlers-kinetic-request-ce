@@ -47,11 +47,23 @@ class KineticRequestCeSubmissionResetV1
 
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
 
+      ### Work around until the patch endpoint will suport {"currentPage": { "naviageion": "first" }}
+
+      get_submission = RestClient::Resource.new(api_route+"?include=form,form.kapp", { :user => api_username, :password => api_password }).get()
+      form_slug = JSON.parse(get_submission)["submission"]["form"]["slug"]
+      kapp_slug = JSON.parse(get_submission)["submission"]["form"]['kapp']["slug"]
+
+      get_form = RestClient::Resource.new("#{server}/app/api/v1/kapps/#{kapp_slug}/forms/#{form_slug}?include=pages",
+        { :user => api_username, :password => api_password }).get()
+      first_page = JSON.parse(get_form)["form"]["pages"][0]["name"]
+
+      ###
+
       # Building the object that will be sent to Kinetic Core
       data = {}
       data.tap do |json|
         json[:coreState] = "Draft"
-        json[:currentPage] = { "navigation" => "first" }
+        json[:currentPage] = { "name" => first_page }
       end
 
       puts "DATA: #{data.to_json}" if @enable_debug_logging
