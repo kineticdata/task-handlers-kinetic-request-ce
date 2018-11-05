@@ -43,16 +43,16 @@ class KineticRequestCeTeamCreateV1
   # results will then be available to subsequent tasks in the process.
   def execute
     space_slug = @parameters["space_slug"].empty? ? @info_values["space_slug"] : @parameters["space_slug"]
-    if @info_values['server'].include?("${space}")
-      server = @info_values['server'].gsub("${space}", space_slug)
+    if @info_values['api_server'].include?("${space}")
+      server = @info_values['api_server'].gsub("${space}", space_slug)
     elsif !space_slug.to_s.empty?
-      server = @info_values['server']+"/"+space_slug
+      server = @info_values['api_server']+"/"+space_slug
     else
-      server = @info_values['server']
+      server = @info_values['api_server']
     end
 
-    username    = URI.encode(@info_values["username"])
-    password    = @info_values["password"]
+    username    = URI.encode(@info_values["api_username"])
+    password    = @info_values["api_password"]
     error_handling  = @parameters["error_handling"]
 
     route_base = "#{server}/app/api/v1/teams"

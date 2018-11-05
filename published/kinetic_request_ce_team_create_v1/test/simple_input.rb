@@ -1,10 +1,10 @@
 {
   'info' => {
-    'server' => 'https://yourserver/kinetic',
-    'username' => '',
-    'password' => '',
+    'api_server' => 'https://yourserver/kinetic',
+    'api_username' => '',
+    'api_password' => '',
     'space_slug' => '',
-	'enable_debug_logging' => 'Yes'
+	  'enable_debug_logging' => 'Yes'
   },
   'parameters' => {
     'error_handling' => 'Error Message',
