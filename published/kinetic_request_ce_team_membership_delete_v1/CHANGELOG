@@ -1,3 +1,6 @@
+Kinetic Request CE Team Membership Delete V1 (2018-11-15)
+ * Fixed bug - handler was raising error in all cases.  Add conditional around error to prevent a false negative.
+
 Kinetic Request CE Team Membership Delete V1.1 (2018-05-25)
 * API Server Info Value changed to allow ${space} in the url for subdomain support
 (ie. https://${space}.localhost:8080/kinetic)
