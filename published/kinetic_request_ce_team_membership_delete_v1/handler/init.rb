@@ -53,11 +53,14 @@ class KineticRequestCeTeamMembershipDeleteV1
       # Find Team in Results
       team = results.find { |team| team['name'] == teamname }
 
-      raise "Team '#{teamname}' not found."
+      if team.nil?
+        raise "Team '#{teamname}' not found."
+      end
 
       # Remove user from team
       resource = RestClient::Resource.new("#{api_route}memberships/#{team['slug']}_#{URI.encode(username)}", { :user => api_username, :password => api_password })
       response = resource.delete({ :content_type => "json", :accept => "json" })
+      puts "Team member #{username} deleted from Team #{team['name']}" if @enable_debug_logging
     rescue RestClient::Exception => error
       error_message = "#{error.http_code}: #{JSON.parse(error.response)["error"]}"
       raise error_message if error_handling == "Raise Error"
