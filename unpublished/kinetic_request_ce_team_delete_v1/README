@@ -1,0 +1,25 @@
+== Kinetic Request CE User Delete
+Delete a team by its slug value.
+
+=== Parameters
+[Error Handling]
+  Determine what to return if an error is encountered.
+[Space Slug]
+	Space slug of which the user you are trying to updates belongs to.
+[Team Slug]
+  The slug of the team to be deleted.
+
+=== Sample Configuration
+Error Handling:     Error Message
+Space Slug:			    acme
+Team Slug:          fedda3bb97792af27c00ac861b13ee32
+
+=== Results
+[Handler Error Message]
+  Error message if an error was encountered and Error Handling is set to "Error Message".
+[Response]
+  The API response from a successful team deletion.
+
+=== Detailed Description
+This handler deletes a Team based on a slug value.  To get a teams slug value in Task
+use kinetic_request_ce_team_retrieve handler.
