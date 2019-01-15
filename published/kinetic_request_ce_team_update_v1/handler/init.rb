@@ -149,9 +149,9 @@ class KineticRequestCeTeamUpdateV1
 
       data = {}
       data.tap do |json|
-        json[:description]       = @parameters["description"]                     if !@parameters["description"].empty?
-        json[:name]              = URI.encode(@parameters["new_name"])            if !@parameters["new_name"].empty?
-        json[:attributes]        = team["attributes"]                             if !@parameters["attributes"].empty?
+        json[:description]       = @parameters["description"]         if !@parameters["description"].empty?
+        json[:name]              = @parameters["new_name"]            if !@parameters["new_name"].empty?
+        json[:attributes]        = team["attributes"]                 if !@parameters["attributes"].empty?
       end
 
       team_name=current_name
