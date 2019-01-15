@@ -62,12 +62,30 @@ class KineticRequestCeCascadingAttributeValueRetrieveV2
           valid_route = true
         end
       end
+      # Check for Datastore Submission Start Context
+      if start_context == "Datastore Submission"
+        if submission_id.nil?
+          error_message = "Intending to search datastore submissions context but no submission id provided"
+        else
+          api_route = api_route + "datastore/submissions/#{submission_id}?include=values,form.attributes,form.space.attributes"
+          valid_route = true
+        end
+      end
       # Check for Form Start Context
       if start_context == "Form"
         if form_slug.nil?  || kapp_slug.nil?
-          error_message = "Intending to search kapp context but no kapp slug provided"
+          error_message = "Intending to search form context but missing either kapp slug or form slug"
         else
           api_route = api_route + "kapps/#{kapp_slug}/forms/#{form_slug}?include=attributes,kapp.attributes,kapp.space.attributes"
+          valid_route = true
+        end
+      end
+      # Check for Datastore Form Start Context
+      if start_context == "Datastore Form"
+        if form_slug.nil?
+          error_message = "Intending to search datastore form context but no form slug provided"
+        else
+          api_route = api_route + "datastore/forms/#{form_slug}?include=attributes,space.attributes"
           valid_route = true
         end
       end
@@ -122,8 +140,16 @@ class KineticRequestCeCascadingAttributeValueRetrieveV2
             types = buildForSubmissionRoute(results, end_context)
           end
 
+          if start_context == "Datastore Submission"
+            types = buildForDatastoreSubmissionRoute(results, end_context)
+          end
+
           if start_context == "Form"
             types = buildForFormRoute(results, end_context)
+          end
+
+          if start_context == "Datastore Form"
+            types = buildForDatastoreFormRoute(results, end_context)
           end
 
           if start_context == "Kapp"
@@ -223,6 +249,19 @@ class KineticRequestCeCascadingAttributeValueRetrieveV2
     return attributes
   end
 
+  def buildForDatastoreSubmissionRoute(data, end_context)
+    attributes = []
+    attributes.push({"Type" => "Submission Value", "Data" => data['submission']['values'].map{|k,v| {"name"=>k,"values"=>Array(v)}}})
+    if end_context == "Space"
+      attributes.push({"Type" => "Form Attribute", "Data" => data['submission']['form']['attributes']})
+      attributes.push({"Type" => "Space Attribute", "Data" => data['submission']['form']['space']['attributes']})
+    elsif end_context == "Datastore Form"
+      attributes.push({"Type" => "Form Attribute", "Data" => data['submission']['form']['attributes']})
+    end
+    # Return Attributes
+    return attributes
+  end
+
   def buildForFormRoute(data, end_context)
     attributes = []
     attributes.push({"Type" => "Form Attribute", "Data" => data['form']['attributes']})
@@ -231,6 +270,17 @@ class KineticRequestCeCascadingAttributeValueRetrieveV2
       attributes.push({"Type" => "Space Attribute", "Data" => data['form']['kapp']['space']['attributes']})
     elsif end_context == "Kapp"
       attributes.push({"Type" => "Kapp Attribute", "Data" => data['form']['kapp']['attributes']})
+    end
+
+    # Return Attributes
+    return attributes
+  end
+
+  def buildForDatastoreFormRoute(data, end_context)
+    attributes = []
+    attributes.push({"Type" => "Form Attribute", "Data" => data['form']['attributes']})
+    if end_context == "Space"
+      attributes.push({"Type" => "Space Attribute", "Data" => data['form']['space']['attributes']})
     end
 
     # Return Attributes
