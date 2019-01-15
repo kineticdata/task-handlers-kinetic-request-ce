@@ -10,7 +10,7 @@
     <parameters>
         <parameter id="error_handling" label="Error Handling" required="true"
             tooltip="Determine what to return if an error is encountered." menu="Error Message,Raise Error">Error Message</parameter>
-        <parameter id="space_slug" label="Space Slug" required="true"
+        <parameter id="space_slug" label="Space Slug"
             tooltip="Space slug of which the user you are trying to updates belongs to."/>
         <parameter id="team_slug" label="Team Slug" required="true"
             tooltip="The slug of the team to delete."/>
