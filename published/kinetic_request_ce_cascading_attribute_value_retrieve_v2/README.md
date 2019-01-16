@@ -1,6 +1,6 @@
 == Kinetic Request CE Cascading Attribute Value Retrieve
-Returns the matched value of the "Property to Return" parameter for the given scope. If the Context is Submission, this handler
-will search for a matching submission value, if none found, it will search the form, then kapp, then space attributes for a match.
+Returns the matched value of the "Property to Return" parameter for the given scope. If the Context is Submission or Datastore Submission, this handler
+will search for a matching submission value, if none found, it will search the form, then kapp (unless a datastore), then space attributes for a match.
 
 The purpose of this handler is to allow Space / Kapp / Form Attributes to be overridden by the lowest level specified.
 
@@ -8,10 +8,11 @@ The purpose of this handler is to allow Space / Kapp / Form Attributes to be ove
 [Error Handling]
   Determine what to return if an error is encountered.  menu="Error Message,Raise Error"
 [Start Context]
-  The LOWEST context for which you want to search. If none found, the handler will continue to search through the end context
+  The LOWEST context for which you want to search. If none found, the handler will continue to search through the end context.
+  Should be one of Submission, Datastore Submission, Form, Datastore Form, Kapp, or Space.
 [End Context]
   The HIGHEST context for which you want to search. If you specify Kapp here, no space attribtues will be searched since Space is
-  higher than Kapp
+  higher than Kapp. Should be one of Submission, Datastore Submission, Form, Datastore Form, Kapp, or Space.
 [Property to Find]
   The Property that the handler will search for (An Attribute name or Form Field Name)
 [Backup Value]
@@ -27,7 +28,6 @@ The purpose of this handler is to allow Space / Kapp / Form Attributes to be ove
 
 === Sample Configuration
 Error Handling:    Error Message
-Field Name:        Attachment
 Start Context:     Submission
 End Context:       Space
 Property To Find:  Notification Template
