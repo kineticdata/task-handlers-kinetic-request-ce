@@ -9,6 +9,6 @@
   'parameters' => {
     'error_handling' => 'Error Message',
 	  'space_slug' => '',
-    'team_slug' => 'fedda3bb97792af27c00ac861b13ee32',
+    'team_name' => 'Testing',
   }
 }

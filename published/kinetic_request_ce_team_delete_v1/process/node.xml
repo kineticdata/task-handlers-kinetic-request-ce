@@ -10,10 +10,10 @@
     <parameters>
         <parameter id="error_handling" label="Error Handling" required="true"
             tooltip="Determine what to return if an error is encountered." menu="Error Message,Raise Error">Error Message</parameter>
-        <parameter id="space_slug" label="Space Slug"
+        <parameter id="space_slug" label="Space Slug" required="false"
             tooltip="Space slug of which the user you are trying to updates belongs to."/>
-        <parameter id="team_slug" label="Team Slug" required="true"
-            tooltip="The slug of the team to delete."/>
+        <parameter id="team_name" label="Team Name" required="true"
+            tooltip="The name of the team to delete."/>
     </parameters>
     <handler name="kinetic_request_ce_team_delete" version="1">
         <infos>
@@ -26,7 +26,7 @@
         <parameters>
             <parameter name="error_handling">&lt;%= @parameters.has_key?("error_handling") ? @parameters["error_handling"] : "Raise" %&gt;</parameter>
             <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
-            <parameter name="team_slug">&lt;%= @parameters['team_slug'] %&gt;</parameter>
+            <parameter name="team_name">&lt;%= @parameters['team_name'] %&gt;</parameter>
         </parameters>
     </handler>
     <results format="xml">
