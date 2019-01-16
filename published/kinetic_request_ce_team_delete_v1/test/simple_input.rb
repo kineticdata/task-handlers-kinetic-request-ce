@@ -1,8 +1,8 @@
 {
   'info' => {
-    'api_server' => 'https://kd-developers.kinops.io',
-    'api_username' => 'chad.rehm@kineticdata.com',
-    'api_password' => 'kinetic1',
+    'api_server' => '',
+    'api_username' => '',
+    'api_password' => '',
     'space_slug' => '',
     'enable_debug_logging' => 'true'
   },
