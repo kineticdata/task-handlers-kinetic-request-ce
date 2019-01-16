@@ -9,7 +9,7 @@
   'parameters' => {
     'error_handling' => 'Error Message',
     'space_slug' => '',
-    'username' => '',
-    'teamname' => ''
+    'username' => 'test.user@kineticdata.com',
+    'team_name' => 'Testing'
   }
 }

@@ -39,28 +39,19 @@ class KineticRequestCeTeamMembershipDeleteV1
     api_username    = URI.encode(@info_values["api_username"])
     api_password    = @info_values["api_password"]
     username        = @parameters["username"]
-    teamname        = @parameters["teamname"]
+    team_name        = @parameters["team_name"]
 
     begin
-      api_route = "#{server}/app/api/v1/"
+      # Derive the team slug from the provided team name
+      team_slug = Digest::MD5.hexdigest team_name
+      puts "Derived slug from team name #{team_name} is #{team_slug}" if @debug_logging_enabled
 
-      # Get Teams to locate team slug
-      resource = RestClient::Resource.new("#{api_route}teams", { :user => api_username, :password => api_password })
-      # Request to the API
-      response = resource.get
-      # Parse teams from result
-      results = JSON.parse(response)["teams"]
-      # Find Team in Results
-      team = results.find { |team| team['name'] == teamname }
-
-      if team.nil?
-        raise "Team '#{teamname}' not found."
-      end
+      api_route = "#{server}/app/api/v1/memberships/#{team_slug}_#{URI.encode(username)}"
 
       # Remove user from team
-      resource = RestClient::Resource.new("#{api_route}memberships/#{team['slug']}_#{URI.encode(username)}", { :user => api_username, :password => api_password })
+      resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       response = resource.delete({ :content_type => "json", :accept => "json" })
-      puts "Team member #{username} deleted from Team #{team['name']}" if @enable_debug_logging
+      puts "Team member #{username} deleted from Team #{team_name}" if @enable_debug_logging
     rescue RestClient::Exception => error
       error_message = "#{error.http_code}: #{JSON.parse(error.response)["error"]}"
       raise error_message if error_handling == "Raise Error"
