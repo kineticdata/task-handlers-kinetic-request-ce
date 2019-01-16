@@ -8,11 +8,11 @@
   },
   'parameters' => {
     'error_handling' => 'Error Message',
-	'space_slug' => '',
-    'current_name' => '',
+	  'space_slug' => '',
+    'current_name' => 'Testing',
     'description' => '',
     'new_name' => '',
     'append_or_replace' => 'Append',
-    'attributes' =>  '[{"name": "Manager","values": ["Testing"]}]'
+    'attributes' =>  '[{"name": "Manager-ER","values": ["Testing 2"]}]'
   }
 }
