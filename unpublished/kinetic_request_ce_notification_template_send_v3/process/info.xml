@@ -23,6 +23,6 @@ with a default value of 'KD_WEBUSER' add the following line:
   <info name="api_server" required="true" description="Kinetic Request CE API Web Application">http://server:port/kinetic</info>
   <info name="api_username" required="true" description="Name of user account that has permission to use the API"></info>
   <info name="api_password" required="true" description="Password for the API user" type="encrypted"></info>
-  <info name="space_slug" required="true" description="Slug of the Space where the User will be created."></info>
+  <info name="space_slug" required="false" description="Slug of the Space where the User will be created."></info>
   <info name="enable_debug_logging" description="Enables debug logging if the value is set to 'Yes'.">No</info>
 </taskInfo>
