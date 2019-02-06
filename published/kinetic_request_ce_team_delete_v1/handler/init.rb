@@ -58,6 +58,7 @@ class KineticRequestCeTeamDeleteV1
     begin
       team_slug = Digest::MD5.hexdigest team_name
       puts "Derived slug from team name #{team_name} is #{team_slug}" if @debug_logging_enabled
+      
       api_route = "#{server}/app/api/v1/teams/#{team_slug}"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       response = resource.delete()

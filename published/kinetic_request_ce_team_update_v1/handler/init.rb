@@ -26,7 +26,7 @@ class KineticRequestCeTeamUpdateV1
     end
 
     # Determine if debug logging is enabled.
-    @debug_logging_enabled = @info_values['enable_debug_logging'] == 'Yes'
+    @debug_logging_enabled = boolean(@info_values['enable_debug_logging'])
     puts("Logging enabled.") if @debug_logging_enabled
 
     # Retrieve all of the handler parameters and store them in a hash variable named @parameters.
@@ -61,40 +61,27 @@ class KineticRequestCeTeamUpdateV1
 
     puts "API ROUTE: #{api_route}" if @debug_logging_enabled
 
-    resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
-    response = resource.get
-    if !response.nil?
-      defs = JSON.parse(response)['teamAttributeDefinitions']
-      defs.each { |definition| teamAttributeDefinitions[definition['name']] = definition['allowsMultiple'] }
-    end
+    begin
 
-    # Get All Teams (the only way to get the current team is by slug, so we need to retrieve all and find the slug)
-    api_route = "#{server}/app/api/v1/teams"
-    resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
-    response = resource.get
-    teams = JSON.parse(response)['teams']
-    teamToUpdate = teams.find {|team| team["name"] == current_name }
-    teamSlugToUpdate = nil
-    response = nil
-    if !teamToUpdate.nil?
-      teamSlugToUpdate = teamToUpdate['slug']
+      # Fetch team attribute definitions and store for later use
+      resource = resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
+      response = resource.get
+      if !response.nil?
+        defs = JSON.parse(response)['teamAttributeDefinitions']
+        defs.each { |definition| teamAttributeDefinitions[definition['name']] = definition['allowsMultiple'] }
+      end
+
+      # Derive the team slug from the provided team name
+      team_slug = Digest::MD5.hexdigest current_name
+      puts "Derived slug from team name #{current_name} is #{team_slug}" if @debug_logging_enabled
+      
       # Get the team to update
-      api_route = "#{server}/app/api/v1/teams/#{teamSlugToUpdate}?include=details,attributes"
+      api_route = "#{server}/app/api/v1/teams/#{team_slug}?include=details,attributes"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       response = resource.get
-    end
-
-    if response.nil?
-      <<-RESULTS
-      <results>
-        <result name="Handler Error Message"></result>
-        <result name="Team Name"></result>
-        <result name="Exists">false</result>
-      </results>
-      RESULTS
-    else
+      
       # Start Update Code
-      api_route = "#{server}/app/api/v1/teams/#{teamSlugToUpdate}"
+      api_route = "#{server}/app/api/v1/teams/#{team_slug}"
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       team = JSON.parse(response)["team"]
 
@@ -149,17 +136,17 @@ class KineticRequestCeTeamUpdateV1
 
       data = {}
       data.tap do |json|
-        json[:description]       = @parameters["description"]         if !@parameters["description"].empty?
-        json[:name]              = @parameters["new_name"]            if !@parameters["new_name"].empty?
-        json[:attributes]        = team["attributes"]                 if !@parameters["attributes"].empty?
+        json[:description]       = @parameters["description"]                     if !@parameters["description"].empty?
+        json[:name]              = @parameters["new_name"]                        if !@parameters["new_name"].empty?
+        json[:attributes]        = team["attributes"]                             if !@parameters["attributes"].empty?
       end
+      puts "Update team with #{data} body" if @debug_logging_enabled
 
       team_name=current_name
       # If new_name is supplied set team_name to its value.
       if !@parameters["new_name"].empty?
         team_name=@parameters["new_name"]
       end
-
       resource.put(data.to_json, { :content_type => "json", :accept => "json" })
 
       <<-RESULTS
@@ -169,7 +156,6 @@ class KineticRequestCeTeamUpdateV1
         <result name="Handler Error Message"></result>
       </results>
       RESULTS
-    end
 
     rescue RestClient::Exception => error
       error_message = JSON.parse(error.response)["error"]
@@ -192,7 +178,7 @@ class KineticRequestCeTeamUpdateV1
           RESULTS
         end
       end
-
+    end
   end
 
 
