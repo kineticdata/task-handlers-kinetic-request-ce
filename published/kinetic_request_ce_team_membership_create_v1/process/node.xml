@@ -15,7 +15,7 @@
           tooltip="The Space the submission is being retrieved from (defaults to info value if not provided)."/>
         <parameter id="username" label="Username" required="true"
           tooltip="The unique username for the user."/>
-        <parameter id="teamname" label="Team Name" required="true"
+        <parameter id="team_name" label="Team Name" required="true"
           tooltip="The name of the team to add a user to."/>
     </parameters>
     <handler name="kinetic_request_ce_team_membership_create" version="1">
@@ -31,7 +31,7 @@
                 @parameters["error_handling"] : "Raise Error" %&gt;</parameter>
             <parameter name="space_slug">&lt;%= @parameters['space_slug'] %&gt;</parameter>
             <parameter name="username">&lt;%= @parameters['username'] %&gt;</parameter>
-            <parameter name="teamname">&lt;%= @parameters['teamname'] %&gt;</parameter>
+            <parameter name="team_name">&lt;%= @parameters['team_name'] %&gt;</parameter>
         </parameters>
     </handler>
     <results format="xml">

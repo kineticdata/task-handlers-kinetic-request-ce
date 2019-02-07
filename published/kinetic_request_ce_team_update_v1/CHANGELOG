@@ -1,3 +1,7 @@
+Kinetic Request CE Team Update V1 (2019-01-16)
+ * Changed from requiring a team slug to a team name. 
+ Slug will be generated using an MD5 from the name.
+
 Kinetic Request CE Team Update V1.2 (2019-01-15)
 * Updated code to not URI encode the new name parameter in the API call.
 
