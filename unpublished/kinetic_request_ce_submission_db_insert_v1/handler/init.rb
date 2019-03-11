@@ -81,8 +81,9 @@ class KineticRequestCeSubmissionDbInsertV1
         @parameters[item.attributes["name"]] = item.text.to_s.strip
       end
 
-      @enable_debug_logging = @info_values['enable_debug_logging'].downcase == 'yes' ||
-                              @info_values['enable_debug_logging'].downcase == 'true'
+      @enable_debug_logging = ["yes", "true"].include?(@info_values['enable_debug_logging'].to_s.strip.downcase)
+      @enable_trace_logging = ["yes", "true"].include?(@info_values['enable_trace_logging'].to_s.strip.downcase)
+      
       puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
 
     elsif input.instance_of?(Hash) then
@@ -95,7 +96,8 @@ class KineticRequestCeSubmissionDbInsertV1
       @info_values['password']          = input['password']
       @info_values['max_connections']   = input['max_connections']
       @info_values['pool_timeout']      = input['pool_timeout']
-      @enable_debug_logging             = input['enable_debug_logging'].to_s.downcase == 'yes' || input['enable_debug_logging'].to_s == 'true'
+      @enable_debug_logging             = ["yes", "true"].include?(input['enable_debug_logging'].to_s.strip.downcase)
+      @enable_trace_logging             = ["yes", "true"].include?(input['enable_trace_logging'].to_s.strip.downcase)
       puts "Parameters: #{@parameters.inspect}" if @enable_debug_logging
 
       @info_values['api_username']    = input['api_username']
@@ -121,6 +123,8 @@ class KineticRequestCeSubmissionDbInsertV1
     if @info_values['pool_timeout'].to_s =~ /\A[1-9]\d*\z/ then
       pool_timeout = @info_values["pool_timeout"].to_i
     end
+    
+    @using_oracle = false
 
     # Attempt to connect to the database
     if @info_values["jdbc_database_id"].downcase == "sqlserver"
@@ -134,15 +138,21 @@ class KineticRequestCeSubmissionDbInsertV1
       #@db.transaction_isolation_level = :repeatable
       #@db.transaction_isolation_level = :committed
     elsif @info_values["jdbc_database_id"].downcase == "oracle"
+      Sequel.database_timezone = :utc
+      #Sequel.application_timezone = :utc
       @db = Sequel.connect("jdbc:#{@info_values["jdbc_database_id"]}:thin:#{user}/#{password}@#{host}:#{port}:#{database_name}", :max_connections => max_connections, :pool_timeout => pool_timeout)
       @db.extension :identifier_mangling
       @db.identifier_input_method = nil
       @db.identifier_output_method = nil
       @max_db_identifier_size = 30
+      @using_oracle = true
     else
       @max_db_identifier_size = 64 if @info_values["jdbc_database_id"].downcase == "postgresql"
       @db = Sequel.connect("jdbc:#{@info_values["jdbc_database_id"]}://#{host}:#{port}/#{database_name}?user=#{user}&password=#{password}", :max_connections => max_connections, :pool_timeout => pool_timeout)
     end
+    
+    # Output SQL statements if the 'trace' level info parameter is set to true.
+    @db.sql_log_level = :debug if @enable_trace_logging
     @db.logger = Logger.new($stdout) if @enable_debug_logging
 
     #Set max db identifier if info value is set to a valid positive integer.
@@ -190,9 +200,10 @@ class KineticRequestCeSubmissionDbInsertV1
     error_message = nil
     error_backtrace = nil
     submission_database_id = nil
+    submission_update_count = nil
 
     if submission.nil? == false then
-      puts submission.inspect if @enable_debug_logging
+      puts "Submission driver_parameters: #{submission.inspect}" if @enable_debug_logging
     end
 
     form_table_name     = get_form_table_name(kapp_slug, form_slug)
@@ -200,7 +211,7 @@ class KineticRequestCeSubmissionDbInsertV1
     tmp_form_table_name = get_form_table_name(kapp_slug, form_slug, {:is_temporary => true})
     tmp_kapp_table_name = get_kapp_table_name(kapp_slug, {:is_temporary => true})
 
-    puts "submissions: #{submissions.inspect}" if @enable_debug_logging
+    puts "Submissions drivers_parameters: #{submissions.inspect}" if @enable_debug_logging
 
     # If this is a bulk insert...
     if submissions.nil? == false then
@@ -396,12 +407,13 @@ class KineticRequestCeSubmissionDbInsertV1
       # If this is *not* a deleted submission...
       else
 
-        #If passed in a submission id by the task engine, retireve the submission information.
+        #If passed in a submission id by the task engine, retrieve the submission information.
         if submission_id.nil? == false then
           api_route = "#{api_server}/app/api/v1/submissions/#{submission_id}/?include=details,descendents,form,form.details,form.fields.details,type,form.kapp,values"
           puts "API ROUTE: #{api_route}" if @enable_debug_logging
           resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
           response = resource.get
+          puts "Retrieved CE Submission: #{response}" if @enable_debug_logging
           submission = JSON.parse(response)['submission']
           submission_values = submission['values']
           form_definition = submission['form']
@@ -433,8 +445,6 @@ class KineticRequestCeSubmissionDbInsertV1
           })
         end
 
-        puts "Submission values: (#{submission_values.inspect})" if @enable_debug_logging
-
         originId = nil
         parentId = nil
         if (submission['origin'].nil? == false && submission['origin'].has_key?('id')) then
@@ -454,8 +464,8 @@ class KineticRequestCeSubmissionDbInsertV1
             :c_closedBy => submission['closedBy'],
             :c_coreState => submission['coreState'],
             :c_createdBy => submission['createdBy'],
-            :c_originId => submission['origin']['id'],
-            :c_parentId => submission['parent']['id'],
+            :c_originId => originId,
+            :c_parentId => parentId,
             :c_submittedBy => submission['submittedBy'],
             :c_updatedBy => submission['updatedBy'],
             :c_type => submission['type'],
@@ -494,8 +504,8 @@ class KineticRequestCeSubmissionDbInsertV1
           # Once the table has been created/modified/verified, insert the submission into the table
           form_db_submission = {
             :c_id => submission["id"],
-            :c_originId => submission["origin"]["id"],
-            :c_parentId => submission["parent"]["id"],
+            :c_originId => originId,
+            :c_parentId => parentId,
             :c_anonymous => submission['sessionToken'],
             :c_closedBy => submission["closedBy"],
             :c_coreState => submission["coreState"],
@@ -516,12 +526,15 @@ class KineticRequestCeSubmissionDbInsertV1
             form_db_submission[limited_column_names_by_field[field].to_sym] = value.nil? ? nil : value.to_s[0,db_column_size_limits[:formField]]
           }
 
-          puts "Inserting the submission '#{submission["id"]}'" if @enable_debug_logging
+          puts "Upserting the submission #{submission["id"]}" if @enable_debug_logging
+          puts "#{submission["id"]} DB values: #{form_db_submission.inspect}" if @enable_debug_logging
           db_submissions = @db[form_table_name.to_sym]
           if @info_values['first_bulk_load'] || db_submissions.select(:c_id).where(:c_id => submission["id"]).count == 0 then
             submission_database_id = db_submissions.insert(form_db_submission)
+            puts "Inserted the submission #{submission["id"]}" if @enable_debug_logging
           else
-            submission_database_id = db_submissions.where(Sequel.lit('"c_id" = ? and "c_updatedAt" < ?', submission['id'], form_db_submission[:c_updatedAt])).update(form_db_submission)  unless @info_values['ignore_updates']
+            submission_update_count = db_submissions.where(Sequel.lit('"c_id" = ? and "c_updatedAt" < ?', submission['id'], form_db_submission[:c_updatedAt])).update(form_db_submission) unless @info_values['ignore_updates']
+            puts "Updated #{submission_update_count} row(s) - #{submission["id"]}." if @enable_debug_logging
           end
         #end form submission database transaction
         end
@@ -529,12 +542,21 @@ class KineticRequestCeSubmissionDbInsertV1
       end
     #end statement for else statement for if this is a bulk submission insert.
     end
+    
+    return get_handler_xml_results({
+          "Submission Database Id" => submission_database_id.to_s,
+          "Updated Submission Count" => submission_update_count.to_s,
+          "Handler Error Message" => "",
+          "Handler Error Backtrace" => ""
+        })
 
     rescue Exception => e
       if @error_handling == "Error Message"
         error_message = e.message
         error_backtrace = e.backtrace.join("\r\n")
         return get_handler_xml_results({
+          "Submission Database Id" => submission_database_id.to_s,
+          "Updated Submission Count" => submission_update_count.to_s,
           "Handler Error Message" => error_message,
           "Handler Error Backtrace" => error_backtrace
         })
@@ -648,7 +670,7 @@ class KineticRequestCeSubmissionDbInsertV1
   def generate_column_def_table()
     table_def_name = "column_definitions"
     # If the table doesn't already exist, create it
-    puts "Column definition table (#{table_def_name}) doesn't exist. Creating new definition table." if @enable_debug_logging
+    puts "Creating column definition table (#{table_def_name}) if it doesn't exist." if @enable_debug_logging
     db_column_size_limits = @db_column_size_limits
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
       @db.create_table?(table_def_name.to_sym) do
@@ -727,7 +749,7 @@ class KineticRequestCeSubmissionDbInsertV1
       :columnName => column_name
     }
 
-    puts "Inserting the column definition for the column name '#{column_name}'" if @enable_debug_logging
+    puts "Upserting the column definition for the column name '#{column_name}'" if @enable_debug_logging
     db_submissions = @db[table_def_name.to_sym]
     #if db_submissions.select(:tableName).where(:tableName => form_table_name, :columnName => column_name).for_update.first.nil? then
     if db_submissions.select(:tableName).where(:tableName => form_table_name, :columnName => column_name).count == 0 then
@@ -770,7 +792,7 @@ class KineticRequestCeSubmissionDbInsertV1
         :formName => form_definition['name']
       }
 
-      puts "Inserting the table definition for the table '#{form_table_name}' into '#{table_def_name}'" if @enable_debug_logging
+      puts "Upserting the table definition for the table '#{form_table_name}' into '#{table_def_name}'" if @enable_debug_logging
         db_submissions = @db[table_def_name.to_sym]
         if db_submissions.select(:tableName).where(:tableName => form_table_name).count == 0 then
           submission_database_id = db_submissions.insert(db_submission)
@@ -852,6 +874,7 @@ class KineticRequestCeSubmissionDbInsertV1
     db_options[:on_commit_preserve_rows] = true if opt_args[:is_temporary] && @info_values["jdbc_database_id"].downcase == "oracle"
 
     db_column_size_limits = @db_column_size_limits
+    using_oracle = @using_oracle
     kapp_fields = @kapp_fields
     kapp_unlimited_column_name = {}
     kapp_limited_column_name = {}
@@ -867,15 +890,15 @@ class KineticRequestCeSubmissionDbInsertV1
         String :c_parentId, :size => db_column_size_limits[:parentId]
         String :c_formSlug, :size => db_column_size_limits[:formSlug]
         String :c_anonymous, :size => db_column_size_limits[:anonymous]
-        DateTime :c_closedAt
+        column :c_closedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_closedBy, :size => db_column_size_limits[:closedBy], :unicode => true
         String :c_coreState, :size => db_column_size_limits[:coreState]
-        DateTime :c_createdAt
+        column :c_createdAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_createdBy, :size => db_column_size_limits[:createdBy], :unicode => true
-        DateTime :c_deletedAt
-        DateTime :c_submittedAt
+        column :c_deletedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
+        column :c_submittedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_submittedBy, :size => db_column_size_limits[:submittedBy], :unicode => true
-        DateTime :c_updatedAt
+        column :c_updatedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_updatedBy, :size => db_column_size_limits[:updatedBy], :unicode => true
         String :c_type, :size => db_column_size_limits[:type]
         kapp_fields.each do |field|
@@ -907,6 +930,7 @@ class KineticRequestCeSubmissionDbInsertV1
     db_options[:on_commit_preserve_rows] = true if args[:is_temporary] && @info_values["jdbc_database_id"].downcase == "oracle"
 
     db_column_size_limits = @db_column_size_limits
+    using_oracle = @using_oracle
     @db.transaction(:retry_on => [Sequel::SerializationFailure]) do
       # If the table doesn't already exist, create it
       puts "Creating Form table (#{form_table_name}) if it doesn't exist."
@@ -915,16 +939,16 @@ class KineticRequestCeSubmissionDbInsertV1
         String :c_originId, :size => db_column_size_limits[:originId]
         String :c_parentId, :size => db_column_size_limits[:parentId]
         String :c_anonymous, :size => db_column_size_limits[:anonymous]
-        DateTime :c_closedAt
+        column :c_closedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_closedBy, :size => db_column_size_limits[:closedBy], :unicode => true
         String :c_coreState, :size => db_column_size_limits[:coreState]
-        DateTime :c_createdAt
+        column :c_createdAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_createdBy, :size => db_column_size_limits[:createdBy], :unicode => true
-        DateTime :c_deletedAt
-        DateTime :c_submittedAt
+        column :c_deletedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
+        column :c_submittedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_submittedBy, :size => db_column_size_limits[:submittedBy], :unicode => true
         String :c_type, :size => db_column_size_limits[:type], :unicode => true
-        DateTime :c_updatedAt
+        column :c_updatedAt, (using_oracle ? 'timestamp with time zone' : DateTime)
         String :c_updatedBy, :size => db_column_size_limits[:updatedBy], :unicode => true
         submission['values'].each do |field,value|
           send("String",unlimited_column_names_by_field[field].to_sym, :text => true, :unicode => true)

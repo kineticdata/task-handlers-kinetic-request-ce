@@ -36,6 +36,7 @@
             <info name="user">&lt;%= @info["user"] %&gt;</info>
             <info name="password">&lt;%= @info["password"] %&gt;</info>
             <info name="enable_debug_logging">&lt;%= @info["enable_debug_logging"] %&gt;</info>
+			<info name="enable_trace_logging">&lt;%= @info["enable_trace_logging"] %&gt;</info>
         </infos>
         <parameters>
             <parameter name="error_handling">&lt;%= @parameters["error_handling"] %&gt;</parameter>
