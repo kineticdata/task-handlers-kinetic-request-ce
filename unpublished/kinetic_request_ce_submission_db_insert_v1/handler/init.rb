@@ -382,24 +382,25 @@ class KineticRequestCeSubmissionDbInsertV1
 
       db_column_size_limits = @db_column_size_limits
       kapp_fields = @kapp_fields
+      submission_id = submission["id"] if submission.nil? == false
 
       # If this is a deleted submission...
       if submission_delete.to_s.strip.size > 1 then
 
         ce_submission = {
-          :c_id => submission["id"],
+          :c_id => submission_id,
           :c_deletedAt => DateTime.parse(submission_delete)
         }
 
         # for both the kapp & form table...
         [kapp_table_name.to_sym, form_table_name.to_sym].each do |table_name|
           # if the record does *not* exist in the table
-          if @db[table_name].select(:c_id).where(:c_id => submission["id"]).count == 0 then
+          if @db[table_name].select(:c_id).where(:c_id => submission_id).count == 0 then
             @db[table_name].insert(ce_submission)
           # else, update it.
           else
             @db[table_name].where(
-              Sequel.lit('"c_id" = ?', submission['id']
+              Sequel.lit('"c_id" = ?', submission_id
             )).update(ce_submission) unless @info_values['ignore_updates']
           end
         end
