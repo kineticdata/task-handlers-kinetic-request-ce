@@ -2,6 +2,9 @@
 Creates a submission.
 
 === Parameters
+[Error Handling]
+  Determines what to return if an error is encountered (Error Message or Raise
+  Error).
 [SpaceSlug]
   The Space slug to be searched. If this value is not entered, the
   Space slug will default to the one configured in info values.
