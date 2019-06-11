@@ -11,5 +11,6 @@
   <info name="database_identifier_size" description="Max database identifier size. Not required to set for MSSQL, Oracle or PostgreSQL. Default for MSSQL is 128, Oracle 30, and PostgreSQL is 64."></info>
   <info name="user" description="Username used to authenticate to the SQL server. Must have table creation and modification rights."></info>
   <info name="password" description="Password for the SQL user account." type="encrypted"></info>
-  <info name="enable_debug_logging" description="Enable debug logging if the value is set to 'Yes'.">No</info>
+  <info name="enable_debug_logging" description="Enable debug logging if the value is set to 'yes'.">No</info>
+  <info name="enable_trace_logging" description="Enable trace logging if the value is set to 'yes'.">No</info>
 </taskInfo>
