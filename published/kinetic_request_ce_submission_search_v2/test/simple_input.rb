@@ -1,25 +1,25 @@
 {
   'info' => {
-    'api_server' => 'https://localhost:8080/kinetic',
-    'api_username' => 'user@kineticdata.com',
-    'api_password' => 'password',
-    'space_slug' => '',
+    'api_server' => '',
+    'api_username' => '',
+    'api_password' => '',
+    'space_slug' => 'internal',
     'enable_debug_logging'=>'yes'
   },
   'parameters' => {
     'error_handling' => 'Error Message',
-    'space_slug' => '',
-    'kapp_slug' => 'services',
-    'form_slug' => 'cleaning',
-    'include' => 'details,values',
-    'core_state' => '',
+    'space_slug' => 'internal',
+    'kapp_slug' => 'catalog',
+    'form_slug' => 'create-1000-submissions',
+    'include' => 'values',
+    'core_state' => 'Draft',
     'timeline' => '',
     'direction' => '',
     'start' => '',
     'end' => '',
-    'limit' => '1000',
-    'query' => 'values[Name] = "Mark"',
+    'limit' => '10',
+    'query' => 'values[Text One]="Yes"',
     'page_token' => '',
-    'return_type' => 'JSON'
+    'return_type' => 'XML'
   }
 }
