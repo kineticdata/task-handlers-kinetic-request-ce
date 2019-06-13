@@ -50,9 +50,10 @@ class KineticRequestCeSubmissionSearchV2
     begin
       api_route = "#{server}/app/api/v1/kapps/#{kapp_slug}"
       api_route += "/forms/#{form_slug}" if !form_slug.to_s.empty?
-      api_route += "/submissions?q=#{URI.encode(query)}"
+      api_route += "/submissions?"
+      api_route += "q=#{URI.encode(query)}" if !@parameters["query"].to_s.empty?
       api_route += "&include=#{URI.encode(@parameters['include'])}" if (!@parameters['include'].to_s.empty? && @parameters['return_type'] != "ID List")
-      api_route += "&core_state=#{@parameters['core_state']}" if !@parameters['core_state'].to_s.empty?
+      api_route += "&coreState=#{@parameters['core_state']}" if !@parameters['core_state'].to_s.empty?
       api_route += "&timeline=#{@parameters['timeline']}" if !@parameters['timeline'].to_s.empty?
       api_route += "&direction=#{@parameters['direction']}" if !@parameters['direction'].to_s.empty?
       api_route += "&start=#{URI.encode(@parameters['start'])}" if !@parameters['start'].to_s.empty?
@@ -64,15 +65,25 @@ class KineticRequestCeSubmissionSearchV2
       resource = RestClient::Resource.new(api_route, { :user => api_username, :password => api_password })
       puts "Attempting to retrieve submissions" if @enable_debug_logging
       response = resource.get
-      puts "Submission successfully retrieved. Now attempting to parse." if @enable_debug_logging
+      
+      if response.code == 200
+        puts "Submission successfully retrieved. Now attempting to parse." if @enable_debug_logging
+      end
 
-      submissions = JSON.parse(response)["submissions"]
-      count = submissions.size
+      json_response = JSON.parse(response)
+
+      puts "Response Messages: #{json_response["messages"].inspect}" if @enable_debug_logging
+      next_page_token = json_response["nextPageToken"]
+      submissions = json_response["submissions"]
+
+      if !submissions.nil?
+        count = submissions.size
+      end
       puts "Number of matching submissions: #{count}" if @enable_debug_logging
 
-      if @parameters['return_type'] == "JSON"
+      if @parameters['return_type'].upcase == "JSON"
         formatted_submissions = submissions.to_json
-      elsif @parameters['return_type'] == "XML"
+      elsif @parameters['return_type'].upcase == "XML"
         xml = convert_json_to_xml(submissions)
         formatted_submissions = @formatter.write(xml, "")
       else # if return type is ID List
@@ -80,10 +91,13 @@ class KineticRequestCeSubmissionSearchV2
           str << "<id>" + result["id"] + "</id>"; str
         }+"</ids>"
       end
+
     rescue RestClient::Exception => error
+      puts "Error: #{JSON.parse(error.response)}" if @enable_debug_logging
       error_message = "#{error.http_code}: #{JSON.parse(error.response)["error"]}"
       raise error_message if error_handling == "Raise Error"
     rescue Exception => error
+      puts "Error: #{error.inspect}" if @enable_debug_logging
       error_message = error.inspect
       raise error if error_handling == "Raise Error"
     end
@@ -92,7 +106,7 @@ class KineticRequestCeSubmissionSearchV2
     <results>
       <result name="Handler Error Message">#{escape(error_message)}</result>
       <result name="Count">#{escape(count)}</result>
-      <result name="Next Page Token">#{escape(JSON.parse(response)["nextPageToken"])}</result>
+      <result name="Next Page Token">#{escape(next_page_token)}</result>
       <result name="Result">#{escape(formatted_submissions)}</result>
     </results>
     RESULTS
